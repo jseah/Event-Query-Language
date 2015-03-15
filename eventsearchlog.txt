@@ -1,0 +1,265 @@
+EXTRACTOR unit tests
+8 unit test 1 end
+
+6 unit test 2 end
+
+EVALUATOR unit tests
+4 unit test 3 end [[2], [8]] [[2], [10]] [[3], [8]] [[3], [10]] 
+
+2 unit test 4 end [[2], [3], [8]] [[2], [3], [10]] 
+
+TRANSLATOR unit tests
+DESCRIPTION intracranial_hypertension AND DESCRIPTION endadmission ENDSEARCH
+3 unit test 5 end [[2], [11]] [[3], [11]] [[12], [11]] 
+
+DESCRIPTION intracranial_hypertension NOT AND DESCRIPTION endadmission ENDSEARCH
+0 unit test 6 end 
+
+DESCRIPTION intracranial_hypertension FOLLOWEDBY TEST ferritin ENDSEARCH
+2 unit test 7 end [[2], [9]] [[3], [9]] 
+
+DESCRIPTION intracranial NOT DESCRIPTION hypertension FOLLOWEDBY TEST ferritin ENDSEARCH
+0 unit test 8 end 
+
+DESCRIPTION intracranial DESCRIPTION hypertension FOLLOWEDBY DESCRIPTION history ENDSEARCH
+4 unit test 9 end [[2], [8]] [[2], [10]] [[3], [8]] [[3], [10]] 
+
+DESCRIPTION intracranial DESCRIPTION hypertension FOLLOWEDBY DESCRIPTION history NOT BETWEEN TEST ferritin ENDSEARCH
+2 unit test 10 end [[2], [8]] [[3], [8]] 
+
+DESCRIPTION intracranial DESCRIPTION hypertension NOT FOLLOWEDBY TEST ferritin ENDSEARCH
+1 unit test 11 end [[12]] 
+
+DESCRIPTION intracranial FOLLOWEDBY DESCRIPTION history NOT PRECEDEDBY TEST ferritin ENDSEARCH
+2 unit test 12 end [[2], [8]] [[3], [8]] 
+
+BRACKETS unit tests
+DESCRIPTION intracranial NOT PRECEDEDBY DESCRIPTION history PRECEDEDBY TEST ferritin ENDSEARCH
+1 unit test 13 end [[9], [7]] 
+
+DESCRIPTION intracranial NOT FOLLOWEDBY (DESCRIPTION history) PRECEDEDBY TEST ferritin ENDSEARCH
+1 unit test 14 end [[12], [7]] 
+
+DESCRIPTION intracranial FOLLOWEDBY (DESCRIPTION history) PRECEDEDBY TEST ferritin ENDSEARCH
+3 unit test 15 end [[2], [10], [7]] [[3], [10], [7]] [[9], [10], [7]] 
+
+DESCRIPTION intracranial FOLLOWEDBY (DESCRIPTION history) PRECEDEDBY TEST ferritin ENDSEARCH
+3 unit test 16 end [[2], [10], [7]] [[3], [10], [7]] [[9], [10], [7]] 
+
+DESCRIPTION intracranial FOLLOWEDBY (DESCRIPTION obesity FOLLOWEDBY DESCRIPTION history) PRECEDEDBY TEST ferritin ENDSEARCH
+2 unit test 17 end [[2], [8], [10], [7]] [[3], [8], [10], [7]] 
+
+DESCRIPTION intracranial FOLLOWEDBY (DESCRIPTION obesity FOLLOWEDBY DESCRIPTION history) NOT PRECEDEDBY TEST ferritin ENDSEARCH
+2 unit test 18 end [[2], [5], [6]] [[3], [5], [6]] 
+
+DESCRIPTION intracranial PRECEDEDBY (DESCRIPTION obesity FOLLOWEDBY DESCRIPTION history) NOT FOLLOWEDBY TEST ferritin ENDSEARCH
+1 unit test 19 end [[12], [8], [10]] 
+
+DESCRIPTION intracranial PRECEDEDBY (DESCRIPTION history PRECEDEDBY DESCRIPTION obesity) NOT FOLLOWEDBY TEST ferritin ENDSEARCH
+1 unit test 20 end [[12], [10], [8]] 
+
+DESCRIPTION intracranial PRECEDEDBY (DESCRIPTION history PRECEDEDBY (DESCRIPTION obesity)) NOT FOLLOWEDBY TEST ferritin ENDSEARCH
+1 unit test 21 end [[12], [10], [8]] 
+
+intracranial PRECEDEDBY (DESCRIPTION history PRECEDEDBY (DESCRIPTION obesity)) NOT FOLLOWEDBY TEST ferritin ENDSEARCH
+1 unit test 22 end [[12], [10], [8]] 
+
+DESCRIPTION intracranial NOT (DESCRIPTION history PRECEDEDBY (DESCRIPTION obesity)) NOT FOLLOWEDBY TEST ferritin ENDSEARCH
+0 unit test 23 end 
+
+NUMERIC 10 ENDSEARCH
+1 unit test 24 end [[11]] 
+
+NUMERIC GREATERTHANEQUALS 10 ENDSEARCH
+3 unit test 25 end [[7]] [[11]] [[12]] 
+[7] is correct as its 'result' field is an integer and is 15210
+
+DATETIME 2014_05_28_18_09 ENDSEARCH
+7 unit test 26 end [[6]] [[7]] [[8]] [[9]] [[10]] [[11]] [[12]] 
+
+DATETIME STRICTLYAFTER 2014_05_28_18_09 ENDSEARCH
+6 unit test 27 end [[7]] [[8]] [[9]] [[10]] [[11]] [[12]] 
+
+DESCRIPTION intracranial AND DESCRIPTION obesity STARTTIME ASPREVIOUS AFTER STARTTIME ENDSEARCH
+4 unit test 28 end [[2], [5]] [[2], [8]] [[3], [5]] [[3], [8]] 
+
+(DESCRIPTION intracranial) AND DESCRIPTION obesity STARTTIME ASPREVIOUS AFTER STARTTIME ENDSEARCH
+4 unit test 29 end [[2], [5]] [[2], [8]] [[3], [5]] [[3], [8]] 
+
+DESCRIPTION intracranial ANYNUMBEROF FOLLOWEDBY obesity ENDSEARCH
+4 unit test 30 end [[2], [5], [8]] [[3], [5], [8]] [[9], []] [[12], []] 
+
+DESCRIPTION intracranial FOLLOWEDBY obesity OR FOLLOWEDBY endadmission ENDSEARCH
+11 unit test 31 end [[2], [11]] [[2], [5]] [[2], [5], [11]] [[2], [8]] [[2], [8], [11]] [[3], [11]] [[3], [5]] [[3], [5], [11]] [[3], [8]] [[3], [8], [11]] [[9], [11]] 
+
+DESCRIPTION intracranial FOLLOWEDBY (obesity) OR FOLLOWEDBY endadmission ENDSEARCH
+11 unit test 32 end [[2], [11]] [[2], [5]] [[2], [5], [11]] [[2], [8]] [[2], [8], [11]] [[3], [11]] [[3], [5]] [[3], [5], [11]] [[3], [8]] [[3], [8], [11]] [[9], [11]] 
+
+DESCRIPTION intracranial FOLLOWEDBY (obesity FOLLOWEDBY TEST ferritin) OR FOLLOWEDBY endadmission ENDSEARCH
+7 unit test 33 end [[2], [11]] [[2], [5], [7]] [[2], [5], [7], [11]] [[3], [11]] [[3], [5], [7]] [[3], [5], [7], [11]] [[9], [11]] 
+
+DESCRIPTION intracranial FOLLOWEDBY obesity OR FOLLOWEDBY TEST ferritin OR FOLLOWEDBY endadmission ENDSEARCH
+19 unit test 34 end [[2], [11]] [[2], [7]] [[2], [7], [11]] [[2], [5]] [[2], [5], [11]] [[2], [5], [7]] [[2], [5], [7], [11]] [[2], [8]] [[2], [8], [11]] [[3], [11]] [[3], [7]] [[3], [7], [11]] [[3], [5]] [[3], [5], [11]] [[3], [5], [7]] [[3], [5], [7], [11]] [[3], [8]] [[3], [8], [11]] [[9], [11]] 
+
+TYPE diagnosis DESCRIPTION intracranial FOLLOWEDBY DESCRIPTION obesity OR FOLLOWEDBY TEST ferritin OR FOLLOWEDBY endadmission ENDSEARCH
+19 unit test 35 end [[2], [11]] [[2], [7]] [[2], [7], [11]] [[2], [5]] [[2], [5], [11]] [[2], [5], [7]] [[2], [5], [7], [11]] [[2], [8]] [[2], [8], [11]] [[3], [11]] [[3], [7]] [[3], [7], [11]] [[3], [5]] [[3], [5], [11]] [[3], [5], [7]] [[3], [5], [7], [11]] [[3], [8]] [[3], [8], [11]] [[9], [11]] 
+
+DOESNOTEXIST doesnotexist OR AND DESCRIPTION startadmission ENDSEARCH
+1 unit test 36 end ['', [1]] 
+
+(DOESNOTEXIST doesnotexist) OR AND DESCRIPTION startadmission ENDSEARCH
+1 unit test 37 end ['', [1]] 
+
+DESCRIPTION startadmission NOT (DOESNOTEXIST doesnotexist) ENDSEARCH
+1 unit test 38 end [[1]] 
+
+NOT (DOESNOTEXIST doesnotexist) AND DESCRIPTION startadmission ENDSEARCH
+1 unit test 39 end ['', [1]] 
+
+DESCRIPTION intracranial GET uuid GET starttime FOLLOWEDBY obesity GET uuid OR FOLLOWEDBY TEST ferritin GET uuid ENDSEARCH
+GET: 
+[[[2]], [datetime.datetime(2011, 5, 28, 18, 9)], [[7]]]
+[[[2]], [datetime.datetime(2011, 5, 28, 18, 9)], [[5]]]
+[[[2]], [datetime.datetime(2011, 5, 28, 18, 9)], [[5]], [[7]]]
+[[[2]], [datetime.datetime(2011, 5, 28, 18, 9)], [[8]]]
+[[[3]], [datetime.datetime(2012, 5, 28, 18, 10)], [[7]]]
+[[[3]], [datetime.datetime(2012, 5, 28, 18, 10)], [[5]]]
+[[[3]], [datetime.datetime(2012, 5, 28, 18, 10)], [[5]], [[7]]]
+[[[3]], [datetime.datetime(2012, 5, 28, 18, 10)], [[8]]]
+8 unit test 40 end [[2], [7]] [[2], [5]] [[2], [5], [7]] [[2], [8]] [[3], [7]] [[3], [5]] [[3], [5], [7]] [[3], [8]] 
+
+DESCRIPTION intracranial GET uuid FOLLOWEDBY (obesity FOLLOWEDBY TEST ferritin GET uuid) OR FOLLOWEDBY endadmission ENDSEARCH
+GET: 
+[[[2]], []]
+[[[2]], [[[7]]]]
+[[[2]], [[[7]]], []]
+[[[3]], []]
+[[[3]], [[[7]]]]
+[[[3]], [[[7]]], []]
+[[[9]], []]
+7 unit test 41 end [[2], [11]] [[2], [5], [7]] [[2], [5], [7], [11]] [[3], [11]] [[3], [5], [7]] [[3], [5], [7], [11]] [[9], [11]] 
+
+(DESCRIPTION intracranial GET uuid) AND DESCRIPTION obesity STARTTIME ASPREVIOUS AFTER STARTTIME ENDSEARCH
+GET: 
+[[[[2]]], []]
+[[[[2]]], []]
+[[[[3]]], []]
+[[[[3]]], []]
+4 unit test 42 end [[2], [5]] [[2], [8]] [[3], [5]] [[3], [8]] 
+
+(DESCRIPTION intracranial GET uuid) OR AND DESCRIPTION startadmission ENDSEARCH
+GET: 
+[[]]
+[[[[2]]]]
+[[[[2]]], []]
+[[[[3]]]]
+[[[[3]]], []]
+[[[[9]]]]
+[[[[9]]], []]
+[[[[12]]]]
+[[[[12]]], []]
+9 unit test 43 end ['', [1]] [[2]] [[2], [1]] [[3]] [[3], [1]] [[9]] [[9], [1]] [[12]] [[12], [1]] 
+
+(DESCRIPTION intracranial GET uuid) FOLLOWEDBY DESCRIPTION startadmission ENDSEARCH
+GET: 
+0 unit test 44 end 
+
+(DESCRIPTION intracranial GET uuid) PRECEDEDBY DESCRIPTION endadmission ENDSEARCH
+GET: 
+[[[[12]]], []]
+1 unit test 45 end [[12], [11]] 
+
+DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN endadmission BETWEEN DESCRIPTION obesity GET uuid ENDSEARCH
+GET: 
+[[[1]], [[11]], [[5]]]
+[[[1]], [[11]], [[8]]]
+2 unit test 46 end [[1], [11], [5]] [[1], [11], [8]] 
+
+DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN endadmission BETWEEN (DESCRIPTION obesity GET uuid OR AND DESCRIPTION hypertension GET uuid) ENDSEARCH
+GET: 
+[[[1]], [[11]], [[[2]]]]
+[[[1]], [[11]], [[[3]]]]
+[[[1]], [[11]], [[[9]]]]
+[[[1]], [[11]], [[[5]]]]
+[[[1]], [[11]], [[[5]], [[2]]]]
+[[[1]], [[11]], [[[5]], [[3]]]]
+[[[1]], [[11]], [[[5]], [[9]]]]
+[[[1]], [[11]], [[[8]]]]
+[[[1]], [[11]], [[[8]], [[2]]]]
+[[[1]], [[11]], [[[8]], [[3]]]]
+[[[1]], [[11]], [[[8]], [[9]]]]
+11 unit test 47 end [[1], [11], ['', [2]]] [[1], [11], ['', [3]]] [[1], [11], ['', [9]]] [[1], [11], [5]] [[1], [11], [5], [2]] [[1], [11], [5], [3]] [[1], [11], [5], [9]] [[1], [11], [8]] [[1], [11], [8], [2]] [[1], [11], [8], [3]] [[1], [11], [8], [9]] 
+
+DESCRIPTION intracranial ONEOF AND DESCRIPTION startadmission ENDSEARCH
+6 unit test 48 end ['', [1]] ['', [13]] [[2]] [[3]] [[9]] [[15]] 
+
+DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN DESCRIPTION endadmission BETWEEN (DESCRIPTION obesity GET uuid ONEOF AND DESCRIPTION hypertension GET uuid) ENDSEARCH
+GET: 
+[[[1]], [[11]], [[[2]]]]
+[[[1]], [[11]], [[[3]]]]
+[[[1]], [[11]], [[[9]]]]
+[[[1]], [[11]], [[[5]]]]
+[[[1]], [[11]], [[[8]]]]
+[[[13]], [[16]], [[[15]]]]
+[[[13]], [[16]], [[[14]]]]
+7 unit test 49 end [[1], [11], ['', [2]]] [[1], [11], ['', [3]]] [[1], [11], ['', [9]]] [[1], [11], [5]] [[1], [11], [8]] [[13], [16], ['', [15]]] [[13], [16], [14]] 
+
+DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN DESCRIPTION endadmission BETWEEN (DESCRIPTION obesity GET uuid AND DESCRIPTION hypertension GET uuid) ENDSEARCH
+GET: 
+[[[1]], [[11]], [[[5]], [[2]]]]
+[[[1]], [[11]], [[[5]], [[3]]]]
+[[[1]], [[11]], [[[5]], [[9]]]]
+[[[1]], [[11]], [[[8]], [[2]]]]
+[[[1]], [[11]], [[[8]], [[3]]]]
+[[[1]], [[11]], [[[8]], [[9]]]]
+[[[13]], [[16]], [[[14]], [[15]]]]
+7 unit test 50 end [[1], [11], [5], [2]] [[1], [11], [5], [3]] [[1], [11], [5], [9]] [[1], [11], [8], [2]] [[1], [11], [8], [3]] [[1], [11], [8], [9]] [[13], [16], [14], [15]] 
+
+DESCRIPTION intracranial AND DESCRIPTION obesity STARTTIME ASPREVIOUS BEFORE OFFSETT-01 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT+01 STARTTIME ENDSEARCH
+0 unit test 51 end 
+
+(DESCRIPTION intracranial) AND DESCRIPTION obesity STARTTIME ASPREVIOUS BEFORE OFFSETT-01 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT+01 STARTTIME ENDSEARCH
+0 unit test 52 end 
+
+DESCRIPTION intracranial AND DESCRIPTION obesity STARTTIME ASPREVIOUS BEFORE OFFSETT+01 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT-01 STARTTIME ENDSEARCH
+1 unit test 53 end [[15], [14]] 
+
+DESCRIPTION intracranial AND DESCRIPTION obesity STARTTIME ASPREVIOUS BEFORE OFFSETT+750_00_00 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT-0000_00_00 STARTTIME ENDSEARCH
+3 unit test 54 end [[2], [5]] [[3], [5]] [[15], [14]] 
+
+start chopped list
+2015-02-20 14:43:48.928482
+DESCRIPTION hypertension GET uuid ENDSEARCH
+25 unit test 55 end
+chopped list done
+2015-02-20 14:43:48.973485
+time taken: 0:00:00.045003
+
+start SAMEADMISSION test
+2015-02-20 14:43:48.974485
+(SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
+26 unit test 56 end [[200611130004]] [[200903110020]] [[200910260003]] [[200912060002]] [[201007060002]] [[201012210003]] [[201104280004]] [[201111130004]] [[201205010005]] [[201205290003]] [[201211010005]] [[201212120006]] [[201212120014]] [[201301230003]] [[201303070002]] [[201303130004]] [[201304050005]] [[201304220004]] [[201305050007]] [[201305160004]] [[201310120004]] [[201310260004]] [[201311280003]] [[201408200002]] [[201411060002]] [[201411210003]] 
+2015-02-20 14:43:49.060490
+time taken: 0:00:00.086005
+
+2015-02-20 14:43:49.062490
+DOESNOTEXIST doesnotexist OR (SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
+26 unit test 57 end ['', [200611130004]] ['', [200903110020]] ['', [200910260003]] ['', [200912060002]] ['', [201007060002]] ['', [201012210003]] ['', [201104280004]] ['', [201111130004]] ['', [201205010005]] ['', [201205290003]] ['', [201211010005]] ['', [201212120006]] ['', [201212120014]] ['', [201301230003]] ['', [201303070002]] ['', [201303130004]] ['', [201304050005]] ['', [201304220004]] ['', [201305050007]] ['', [201305160004]] ['', [201310120004]] ['', [201310260004]] ['', [201311280003]] ['', [201408200002]] ['', [201411060002]] ['', [201411210003]] 
+2015-02-20 14:43:49.165496
+time taken: 0:00:00.103006
+
+2015-02-20 14:43:49.168496
+(SAMEADMISSION DESCRIPTION infection FOLLOWEDBY isolation) ENDSEARCH
+4 unit test 58 end [[200903110009], [200903110018]] [[201111130005], [201111130009]] [[201205010009], [201205010013]] [[201411210002], [201411210005]] 
+2015-02-20 14:43:49.254501
+time taken: 0:00:00.086005
+
+DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN DESCRIPTION endadmission BETWEEN (TYPE diagnosis GET description AND TYPE pathology TEST Sodium RESULT NUMERIC GREATERTHANEQUALS 0.000000 RESULT NUMERIC LESSTHANEQUALS 120.000000 GET result) ENDSEARCH
+2 unit test 59 end [[13], [16], [14], [17]] [[13], [16], [15], [17]] 
+
+(SAMEADMISSION TYPE diagnosis GET description AND TYPE pathology TEST Sodium RESULT NUMERIC GREATERTHANEQUALS 0.000000 RESULT NUMERIC LESSTHANEQUALS 120.000000 GET result) ENDSEARCH
+2 unit test 60 end [[14], [17]] [[15], [17]] 
+
+(SAMEADMISSION doesnotexist ANYNUMBEROF OR AND TYPE diagnosis GET description AND TYPE pathology TEST Sodium RESULT NUMERIC GREATERTHANEQUALS 0.000000 RESULT NUMERIC LESSTHANEQUALS 120.000000 GET result) ENDSEARCH
+1 unit test 61 end [['', [14], [15], [17]]] 
+
