@@ -346,14 +346,14 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                 if not(debugstr == ""):
                     log(debugstr)
                     try:
-                        log(str(i) + " " + str(connectors[i]) + " test")
+                        log(str(i) + " " + str(queries[i]) + " " + str(connectors[i]) + " test")
                         log(str(orstate[i]))
                     except:
                         pass
                 #print(eventfoundquerylist[i])
             log(str(getsquerylist))
+            print(eventfoundquerydepth)
             log("")
-        #print(eventfoundquerydepth)
         #DEBUG END
         currenteventfoundlist = eventfoundquerylist[eventfoundquerydepth]
         currentgetsquerylist = getsquerylist[eventfoundquerydepth]
@@ -394,7 +394,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                 i = eventfoundquerydepth
                 bracketcount = 0
                 while True:                                     #to determine start of the closed bracket we just hit
-                    if i == 0:                                  #reached start of query
+                    if i == startdepth:                         #reached start of query
                         bracketstart = i
                         break
                     if queries[i][0][0] == ")":
@@ -1764,6 +1764,15 @@ if __name__ == '__main__':
     log("")
     
     instr = "(obesity OR AND ferritin) FOLLOWEDBY tobacco ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 62 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 6
+    log("")
+    
+    #brackets beginning another bracket
+    instr = "(SAMEADMISSION (obesity OR AND ferritin) FOLLOWEDBY tobacco) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
