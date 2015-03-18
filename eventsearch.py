@@ -466,6 +466,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                             if flag == 'latest' and (eventkey == 'starttime' or eventkey == 'endtime'):
                                 latesttime = 0
                                 for time in currenteventfound[eventkey][eventquerydepth]:
+                                    if time == "":
+                                        continue
                                     if latesttime == 0:
                                         latesttime = time
                                         continue
@@ -475,6 +477,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                             if flag == 'earliest' and (eventkey == 'starttime' or eventkey == 'endtime'):
                                 earliesttime = 0
                                 for time in currenteventfound[eventkey][eventquerydepth]:
+                                    if time == "":
+                                        continue
                                     if earliesttime == 0:
                                         earliesttime = time
                                         continue
@@ -1759,3 +1763,10 @@ if __name__ == '__main__':
     assert len(test2[0]) == 1
     log("")
     
+    instr = "(obesity OR AND ferritin) FOLLOWEDBY tobacco ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 62 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 6
+    log("")
