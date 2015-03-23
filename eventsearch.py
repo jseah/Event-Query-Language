@@ -315,8 +315,9 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                 for getquery in gets[eventfoundquerydepth]:
                     getkey = getquery[1]
                     if getkey not in addevent:
-                        err = KeyNotFoundError("'" + str(eventkey) + "' key to be extracted does not exist in events. ")
-                        raise err
+                        nextgetquery.append(None)
+                        #err = KeyNotFoundError("'" + str(eventkey) + "' key to be extracted does not exist in events. ")
+                        #raise err
                     nextgetquery.append(addevent[getkey])
             nextgetquerylist.append(nextgetquery)
     eventfoundquerylist[eventfoundquerydepth] = eventfound
@@ -595,7 +596,10 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         for event in extracted:                                 #collect all events' gets and make one array for ANYNUMBEROF
                             nextget = []
                             for getkey in gets[eventfoundquerydepth + 1]:
-                                nextget.append(event[getkey[1]])
+                                if getkey[1] in event:
+                                    nextget.append(event[getkey[1]])
+                                else:
+                                    nextget.append(None)
                             nextgetquery.append(nextget)
                     else:
                         nextgetquery.append([])
@@ -619,7 +623,10 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         if len(gets[eventfoundquerydepth + 1]) > 0:         #if there are GETs, get them
                             nextget = []
                             for getkey in gets[eventfoundquerydepth + 1]:
-                                nextget.append(event[getkey[1]])
+                                if getkey[1] in event:
+                                    nextget.append(event[getkey[1]])
+                                else:
+                                    nextget.append(None)
                             nextgetquery.append(nextget)
                         else:
                             nextgetquery.append([])
@@ -692,7 +699,10 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                             for event in extracted:                                 #collect all events' gets and make one array for ANYNUMBEROF
                                 nextget = []
                                 for getkey in gets[eventfoundquerydepth + 1]:
-                                    nextget.append(event[getkey[1]])
+                                    if getkey[1] in event:
+                                        nextget.append(event[getkey[1]])
+                                    else:
+                                        nextget.append(None)
                                 nextgetquery.append(nextget)
                         else:
                             nextgetquery.append([])
@@ -716,7 +726,10 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                             if len(gets[eventfoundquerydepth + 1]) > 0:         #if there are GETs, get them
                                 nextget = []
                                 for getkey in gets[eventfoundquerydepth + 1]:
-                                    nextget.append(event[getkey[1]])
+                                    if getkey[1] in event:
+                                        nextget.append(event[getkey[1]])
+                                    else:
+                                        nextget.append(None)
                                 nextgetquery.append(nextget)
                             else:
                                 nextgetquery.append([])
