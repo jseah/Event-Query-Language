@@ -1792,3 +1792,13 @@ if __name__ == '__main__':
     log(str(len(test2[0])) + " unit test 62 end " + printuuid(test2[0]))
     assert len(test2[0]) == 6
     log("")
+    
+    #GET return None
+    instr = "(SAMEADMISSION (obesity OR AND ferritin GET doesnotexist) FOLLOWEDBY tobacco) ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 63 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 6
+    print(test2[2])
+    log("")
