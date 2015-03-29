@@ -318,7 +318,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         nextgetquery.append(None)
                         #err = KeyNotFoundError("'" + str(eventkey) + "' key to be extracted does not exist in events. ")
                         #raise err
-                    nextgetquery.append(addevent[getkey])
+                    else:
+                        nextgetquery.append(addevent[getkey])
             nextgetquerylist.append(nextgetquery)
     eventfoundquerylist[eventfoundquerydepth] = eventfound
     getsquerylist[eventfoundquerydepth] = nextgetquerylist
@@ -1794,7 +1795,7 @@ if __name__ == '__main__':
     log("")
     
     #GET return None
-    instr = "(SAMEADMISSION (obesity OR AND ferritin GET doesnotexist) FOLLOWEDBY tobacco) ENDSEARCH"
+    instr = "(SAMEADMISSION (obesity GET doesnotexist OR AND ferritin GET doesnotexist) FOLLOWEDBY tobacco GET doesnotexist) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
