@@ -64,7 +64,8 @@ def extract(eventList, keyconstraints):
                         break
             if "NOT" in flags:
                 constraintmatch = not constraintmatch
-            #print("Debug", key, constraintmatch)
+            if debug4:
+                print("Debug", key, constraintmatch)
             if not constraintmatch:
                 eventmatchesconstraints = False
                 break
@@ -747,7 +748,7 @@ def translate(userquery):
     search strings like 'intracranial' must be all lower-case, underscores will be replaced with ' '
     '''
     #constants
-    connectorwords = ["AND", "FOLLOWEDBY", "PRECEDEDBY", "BETWEEN", "ENDSEARCH"]
+    connectorwords = ["AND", "FOLLOWEDBY", "STRICTLYFOLLOWEDBY", "PRECEDEDBY", "STRICTLYPRECEDEDBY", "BETWEEN", "STRICTLYBETWEEN", "ENDSEARCH"]
     searchwords = ["NOT", "ANYNUMBEROF", "OR", "ONEOF"]
     brackets = ["(", ")"]
     
@@ -857,6 +858,7 @@ def translate(userquery):
     for queryindex in range(1, len(userquerylist)):
         userquery = userquerylist[queryindex]
         connector = connectorlist[queryindex - 1]
+        connector = connector.split()
         query = parsekeyconstraint(userquery)
         buildconnector = []
         if "NOT" in connector:
@@ -873,14 +875,28 @@ def translate(userquery):
             buildconnector.append('ANYNUMBEROF')
         connectors.append(buildconnector)
         if "FOLLOWEDBY" in connector and "NOT" in connector:
-            query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], []])           #not after earliest time in previous return if []; interpreted strictly for the rest
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['<=']])           #not after earliest time in previous return if []; interpreted strictly for the rest
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
             querylist.append(query)
             continue                #NOT terms do not generate a dictlist entry; do not increment querynumber
+        if "STRICTLYFOLLOWEDBY" in connector and "NOT" in connector:
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['<']])
+            query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
+            querylist.append(query)
+            continue
         if "BETWEEN" in connector and "NOT" in connector:
             query.append(['starttime', ['EVENT', 'starttime', -1, ["latest"]], ['>=']])
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
-            query.append(['starttime', ['EVENT', 'starttime', -2, ["earliest"]], []])
+            query.append(['starttime', ['EVENT', 'starttime', -2, ["earliest"]], ['<=']])
+            query.append(['uuid', ['EVENT', 'uuid', -2, ["any"]], ['NOT']])
+            querylist.append(query)
+            if debug:
+                print("TEST")
+            continue
+        if "STRICTLYBETWEEN" in connector and "NOT" in connector:
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["latest"]], ['>']])
+            query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
+            query.append(['starttime', ['EVENT', 'starttime', -2, ["earliest"]], ['<']])
             query.append(['uuid', ['EVENT', 'uuid', -2, ["any"]], ['NOT']])
             querylist.append(query)
             continue
@@ -892,15 +908,25 @@ def translate(userquery):
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
             querylist.append(query)
             continue
-        if connector == "(":
+        if "STRICTLYPRECEDEDBY" in connector and "NOT" in connector:
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["latest"]], ['>']])
+            query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
+            querylist.append(query)
+            continue
+        if "(" in connector:
             if connectorlist[queryindex] == "SAMEADMISSION":
                 connectorlist.pop(queryindex)           #remove connectorlist extra entry for SAMEADMISSION
                 connectors[len(connectors) - 2].append("SAMEADMISSION")         #HACK: buildconnector cannot be used here so have to edit connectors list directly
-        if connector == ")":
+        if ")" in connector:
             pass
         if "OR" in connector:
             pass
         if "BETWEEN" in connector:
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['>=']])
+            query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
+            query.append(['starttime', ['EVENT', 'starttime', -2, ["latest"]], ['<=']])
+            query.append(['uuid', ['EVENT', 'uuid', -2, ["any"]], ['NOT']])
+        if "STRICTLYBETWEEN" in connector:
             query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['>']])
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
             query.append(['starttime', ['EVENT', 'starttime', -2, ["latest"]], ['<']])
@@ -908,8 +934,14 @@ def translate(userquery):
         if "PRECEDEDBY" in connector:
             query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['>=']])
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
+        if "STRICTLYPRECEDEDBY" in connector:
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['>']])
+            query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
         if "FOLLOWEDBY" in connector:
-            query.append(['starttime', ['EVENT', 'starttime', -1, ["latest"]], []])
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["latest"]], ['<=']])
+            query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
+        if "STRICTLYFOLLOWEDBY" in connector:
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["latest"]], ['<']])
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
         querylist.append(query)
     
@@ -1198,6 +1230,7 @@ if __name__ == '__main__':
     debug = False
     debug2 = False
     debug3 = False
+    debug4 = False
     eventList = [{'uuid':[1], 'endtime': datetime(2010, 5, 26, 10, 0), 'type': 'admin ', 'description': 'startadmission ', 'starttime': datetime(2010, 5, 26, 10, 0)},
     {'uuid':[2], 'code': u'G93.2 ', 'endtime': datetime(2011, 5, 28, 18, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2011, 5, 28, 18, 9)},  
     {'uuid':[3], 'code': u'G93.2 ', 'endtime': datetime(2012, 5, 28, 18, 10),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2012, 5, 28, 18, 10)},   
@@ -1284,7 +1317,7 @@ if __name__ == '__main__':
     log(str(len(test[0])) + " unit test 9 end " + printuuid(test[0]) + "\n")
     assert len(test[0]) == 4
     
-    instr = "DESCRIPTION intracranial DESCRIPTION hypertension FOLLOWEDBY DESCRIPTION history NOT BETWEEN TEST ferritin ENDSEARCH"
+    instr = "DESCRIPTION intracranial DESCRIPTION hypertension FOLLOWEDBY DESCRIPTION history NOT STRICTLYBETWEEN TEST ferritin ENDSEARCH"
     test, connectors, gets = translate(instr)
     test = evaluate(eventList, test, connectors, gets)
     log(instr)
@@ -1594,7 +1627,7 @@ if __name__ == '__main__':
     log(str(len(test2[0])) + " unit test 45 end " + printuuid(test2[0]) + "\n")
     assert len(test2[0]) == 1
     
-    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN endadmission BETWEEN DESCRIPTION obesity GET uuid ENDSEARCH"
+    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN endadmission STRICTLYBETWEEN DESCRIPTION obesity GET uuid ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
@@ -1604,7 +1637,7 @@ if __name__ == '__main__':
     log(str(len(test2[0])) + " unit test 46 end " + printuuid(test2[0]) + "\n")
     assert len(test2[0]) == 2
     
-    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN endadmission BETWEEN (DESCRIPTION obesity GET uuid OR AND DESCRIPTION hypertension GET uuid) ENDSEARCH"
+    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN endadmission STRICTLYBETWEEN (DESCRIPTION obesity GET uuid OR AND DESCRIPTION hypertension GET uuid) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
@@ -1640,7 +1673,7 @@ if __name__ == '__main__':
     
     #debug = True
     #debug2 = True
-    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN DESCRIPTION endadmission BETWEEN (DESCRIPTION obesity GET uuid ONEOF AND DESCRIPTION hypertension GET uuid) ENDSEARCH"
+    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (DESCRIPTION obesity GET uuid ONEOF AND DESCRIPTION hypertension GET uuid) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
@@ -1650,7 +1683,7 @@ if __name__ == '__main__':
     log(str(len(test2[0])) + " unit test 49 end " + printuuid(test2[0]) + "\n")
     assert len(test2[0]) == 7
     
-    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN DESCRIPTION endadmission BETWEEN (DESCRIPTION obesity GET uuid AND DESCRIPTION hypertension GET uuid) ENDSEARCH"
+    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (DESCRIPTION obesity GET uuid AND DESCRIPTION hypertension GET uuid) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
@@ -1753,7 +1786,7 @@ if __name__ == '__main__':
     assert len(test2[0]) == 4
     log("")
     
-    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT BETWEEN DESCRIPTION startadmission NOT BETWEEN DESCRIPTION endadmission BETWEEN (TYPE diagnosis GET description AND TYPE pathology TEST Sodium RESULT NUMERIC GREATERTHANEQUALS 0.000000 RESULT NUMERIC LESSTHANEQUALS 120.000000 GET result) ENDSEARCH"
+    instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (TYPE diagnosis GET description AND TYPE pathology TEST Sodium RESULT NUMERIC GREATERTHANEQUALS 0.000000 RESULT NUMERIC LESSTHANEQUALS 120.000000 GET result) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
@@ -1800,6 +1833,23 @@ if __name__ == '__main__':
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
     log(str(len(test2[0])) + " unit test 63 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 6
+    print(test2[2])
+    log("")
+    
+    eventList = [{'uuid':[1], 'endtime': datetime(2010, 5, 26, 10, 0), 'type': 'admin ', 'description': 'startadmission ', 'starttime': datetime(2010, 5, 26, 10, 0), 'number': 1},
+    {'uuid':[2], 'code': u'E66.9 ', 'endtime': datetime(2013, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'obesity, unspecified ', 'starttime': datetime(2013, 5, 28, 18, 9), 'number': 4}, 
+    {'uuid':[3], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 19, 9), 'number': 2},   #same time as 2
+    {'uuid':[4], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 19, 9), 'number': 3},   #1 day later
+    {'uuid':[5], 'code': u'Z86.43 ', 'endtime': datetime(2014, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'personal history of tobacco use disorder ', 'starttime': datetime(2014, 5, 28, 18, 9), 'number': 5}, 
+    ]
+    
+    #NOT STRICTLYBETWEEN strictness testing
+    instr = "obesity FOLLOWEDBY intracranial NOT STRICTLYBETWEEN intracranial ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 64 end " + printuuid(test2[0]))
     assert len(test2[0]) == 6
     print(test2[2])
     log("")
