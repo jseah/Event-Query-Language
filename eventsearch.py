@@ -13,6 +13,7 @@ keyswithlisttypevalues = ['uuid']
 debug = False
 debug2 = False
 debug3 = False
+debug4 = False
 class KeyNotFoundError(Exception):
     def __init__(self, message):
         self.message = message
