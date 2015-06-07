@@ -112,7 +112,7 @@ def valuematcheskey(value, key, constraint, flags):
                     constraintmatch = False
     elif isinstance(constraint, datetime):  #is a date
         if len(prunedflags) == 0:
-            if not constraint <= value:
+            if not constraint == value:
                 constraintmatch = False
         for flag in flags:
             if flag == '>=':
@@ -1259,7 +1259,7 @@ if __name__ == '__main__':
     log("EVALUATOR unit tests")
     query = [ ('description', 'intracranial ', []) ]
     query2 = [ ('description', 'history ', []),
-    ('starttime', ['EVENT', 'starttime', 0], []),
+    ('starttime', ['EVENT', 'starttime', 0], ['<=']),
     ('uuid', ['EVENT', 'uuid', 0], ['NOT'])
     ]
     querylist = [query, query2]
@@ -1270,11 +1270,11 @@ if __name__ == '__main__':
     query = [ ('description', 'intracranial ', []),
     ('description', 'hypertension ', []) ]
     query2 = [ ('description', 'intracranial ', []),
-    ('starttime', ['EVENT', 'starttime', 0], []),
+    ('starttime', ['EVENT', 'starttime', 0], ['<=']),
     ('uuid', ['EVENT', 'uuid', 0], ['NOT'])
     ]
     query3 = [ ('description', 'history ', []),
-    ('starttime', ['EVENT', 'starttime', 1], []),
+    ('starttime', ['EVENT', 'starttime', 1], ['<=']),
     ('uuid', ['EVENT', 'uuid', 1], ['NOT'])
     ]
     querylist = [query, query2, query3]
@@ -1462,7 +1462,7 @@ if __name__ == '__main__':
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
     log(str(len(test2[0])) + " unit test 26 end " + printuuid(test2[0]) + "\n")
-    assert len(test2[0]) == 7
+    assert len(test2[0]) == 1
     
     instr = "DATETIME STRICTLYAFTER 2014_05_28_18_09 ENDSEARCH"
     test, connectors, gets = translate(instr)
@@ -1851,6 +1851,6 @@ if __name__ == '__main__':
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
     log(str(len(test2[0])) + " unit test 64 end " + printuuid(test2[0]))
-    assert len(test2[0]) == 6
+    assert len(test2[0]) == 2
     print(test2[2])
     log("")
