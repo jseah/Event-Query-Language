@@ -480,7 +480,6 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                                 r = len(currenteventfound[eventkey]) + r
                             currentkey.append(copy.deepcopy(currenteventfound[eventkey][r]))
                             eventconstraint.append(copy.deepcopy(currenteventfound[eventkey][r]))
-                        print(eventflags, currentkey, keyconstraint[2])
                     else:
                         eventconstraint = copy.deepcopy(currenteventfound[eventkey][eventquerydepth][len(currenteventfound[eventkey][eventquerydepth]) - 1])    #default is the last entry
                     if len(constraint) == 4:                            #check for wildcard flags; 'earliest' and 'latest' flags only work for starttime and endtime wildcards
@@ -565,7 +564,6 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                             if flag == 'any':                           #the ANY extractor flag means the constraint is a bracket return and the value has to match only one of the constraints to pass
                                 flags.append('ANY')
                                 eventconstraint = copy.deepcopy(currentkey)
-                            print(eventconstraint)
                 buildkeyconstraint = (key, eventconstraint, flags)
                 buildquery.append( buildkeyconstraint )
             else:
