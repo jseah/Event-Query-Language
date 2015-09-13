@@ -182,6 +182,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
     constraint wildcards [1] is the key of the wildcard
     constraint wildcards [2] is the list position of the wildcard (note: no checks for out of bounds, will crash on invalid values)
     [3] and above are flags and controls
+    > 3 is a list, each element of the list is a flag
     
     connectors define how the evaluator reacts to queries, currently implemented AND (default) only, so connectors are not used
     
@@ -444,10 +445,17 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     raise err
                 if eventquerydepth < 0:
                     eventquerydepth = len(currenteventfound[eventkey]) + eventquerydepth
-                if (eventkey in keyswithlisttypevalues and len(currenteventfound[eventkey]) > eventquerydepth and not(isinstance(currenteventfound[eventkey][eventquerydepth][0], list))) or (eventkey not in keyswithlisttypevalues and not isinstance(currenteventfound[eventkey][eventquerydepth], list)):      #target eventquerydepth to base this wildcard on is a query, not a bracket return; special case coding for 'uuid' eventkeys as those are lists
+                if len(constraint) == 4:
+                    eventflags = constraint[3]
+                else:
+                    eventflags = []
+                isrange = False
+                for flag in eventflags:
+                    if isinstance(flag, list) and flag[0] == "range":   #range flags denote a range of past events on which the wildcard will operate; treats that range as a bracket return
+                        isrange = flag[1]
+                if (eventkey in keyswithlisttypevalues and len(currenteventfound[eventkey]) > eventquerydepth and not(isinstance(currenteventfound[eventkey][eventquerydepth][0], list)) and (isrange is False)) or (eventkey not in keyswithlisttypevalues and not isinstance(currenteventfound[eventkey][eventquerydepth], list) and (isrange is False)):      #target eventquerydepth to base this wildcard on is a query, not a bracket return and not having a range flag; special case coding for 'uuid' eventkeys as those are lists
                     eventconstraint = copy.deepcopy(currenteventfound[eventkey][eventquerydepth])
                     if len(constraint) == 4:        #check for offset flags
-                        eventflags = constraint[3]
                         for flag in eventflags:
                             if isinstance(flag, list) and flag[0] == "OFFSET":
                                 if flag[1] == 'N':
@@ -463,13 +471,23 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                                     elif flag[2] == '-':
                                         eventconstraint = eventconstraint - offset
                 else:                                                           #is a bracket return
-                    eventconstraint = copy.deepcopy(currenteventfound[eventkey][eventquerydepth][len(currenteventfound[eventkey][eventquerydepth]) - 1])    #default is the last entry
+                    currentkey = currenteventfound[eventkey][eventquerydepth]
+                    if not (isrange is False):             #Range flag overrides the given eventquery depth
+                        currentkey = []
+                        eventconstraint = []
+                        for r in isrange:
+                            if r < 0:
+                                r = len(currenteventfound[eventkey]) + r
+                            currentkey.append(copy.deepcopy(currenteventfound[eventkey][r]))
+                            eventconstraint.append(copy.deepcopy(currenteventfound[eventkey][r]))
+                        print(eventflags, currentkey, keyconstraint[2])
+                    else:
+                        eventconstraint = copy.deepcopy(currenteventfound[eventkey][eventquerydepth][len(currenteventfound[eventkey][eventquerydepth]) - 1])    #default is the last entry
                     if len(constraint) == 4:                            #check for wildcard flags; 'earliest' and 'latest' flags only work for starttime and endtime wildcards
-                        eventflags = constraint[3]
                         for flag in eventflags:
                             if flag == 'latest' and (eventkey == 'starttime' or eventkey == 'endtime'):
                                 latesttime = 0
-                                for time in currenteventfound[eventkey][eventquerydepth]:
+                                for time in currentkey:
                                     if time == "":
                                         continue
                                     if latesttime == 0:
@@ -480,7 +498,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                                 eventconstraint = latesttime
                             if flag == 'earliest' and (eventkey == 'starttime' or eventkey == 'endtime'):
                                 earliesttime = 0
-                                for time in currenteventfound[eventkey][eventquerydepth]:
+                                for time in currentkey:
                                     if time == "":
                                         continue
                                     if earliesttime == 0:
@@ -489,6 +507,48 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                                     if earliesttime > time:
                                         earliesttime = time
                                 eventconstraint = earliesttime
+                            if flag == 'rangelatest' and (eventkey == 'starttime' or eventkey == 'endtime'):        #used for range; gives earliest for a range but latest for brackets inside the range; behaves like earliest if used on non-range
+                                earliesttime = 0
+                                for time in currentkey:
+                                    if time == "":
+                                        continue
+                                    if isinstance(time, list):
+                                        for t in time:
+                                            if t == "":
+                                                continue
+                                            if latestt == 0:
+                                                latestt = t
+                                                continue
+                                            if latestt > t:
+                                                latestt = t
+                                        time = latestt
+                                    if earliesttime == 0:
+                                        earliesttime = time
+                                        continue
+                                    if earliesttime < time:
+                                        earliesttime = time
+                                eventconstraint = earliesttime
+                            if flag == 'rangeearliest' and (eventkey == 'starttime' or eventkey == 'endtime'):
+                                latesttime = 0
+                                for time in currentkey:
+                                    if time == "":
+                                        continue
+                                    if isinstance(time, list):
+                                        for t in time:
+                                            if t == "":
+                                                continue
+                                            if earliestt == 0:
+                                                earliestt = t
+                                                continue
+                                            if earliestt < t:
+                                                earliestt = t
+                                        time = earliestt
+                                    if latesttime == 0:
+                                        latesttime = time
+                                        continue
+                                    if latesttime > time:
+                                        latesttime = time
+                                eventconstraint = latesttime
                             if isinstance(flag, list) and flag[0] == "OFFSET":
                                 if flag[1] == 'N':
                                     offset = int(flag[3])
@@ -504,7 +564,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                                         eventconstraint = eventconstraint - offset
                             if flag == 'any':                           #the ANY extractor flag means the constraint is a bracket return and the value has to match only one of the constraints to pass
                                 flags.append('ANY')
-                                eventconstraint = copy.deepcopy(currenteventfound[eventkey][eventquerydepth])
+                                eventconstraint = copy.deepcopy(currentkey)
+                            print(eventconstraint)
                 buildkeyconstraint = (key, eventconstraint, flags)
                 buildquery.append( buildkeyconstraint )
             else:
@@ -886,18 +947,18 @@ def translate(userquery):
             querylist.append(query)
             continue
         if "BETWEEN" in connector and "NOT" in connector:
-            query.append(['starttime', ['EVENT', 'starttime', -1, ["latest"]], ['>=']])
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["rangelatest", ["range", [-1, -2]]]], ['>=']])
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
-            query.append(['starttime', ['EVENT', 'starttime', -2, ["earliest"]], ['<=']])
+            query.append(['starttime', ['EVENT', 'starttime', -2, ["rangeearliest", ["range", [-1, -2]]]], ['<=']])
             query.append(['uuid', ['EVENT', 'uuid', -2, ["any"]], ['NOT']])
             querylist.append(query)
             if debug:
                 print("TEST")
             continue
         if "STRICTLYBETWEEN" in connector and "NOT" in connector:
-            query.append(['starttime', ['EVENT', 'starttime', -1, ["latest"]], ['>']])
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["rangelatest", ["range", [-1, -2]]]], ['>']])
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
-            query.append(['starttime', ['EVENT', 'starttime', -2, ["earliest"]], ['<']])
+            query.append(['starttime', ['EVENT', 'starttime', -2, ["rangeearliest", ["range", [-1, -2]]]], ['<']])
             query.append(['uuid', ['EVENT', 'uuid', -2, ["any"]], ['NOT']])
             querylist.append(query)
             continue
@@ -923,14 +984,14 @@ def translate(userquery):
         if "OR" in connector:
             pass
         if "BETWEEN" in connector:
-            query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['>=']])
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["rangelatest", ["range", [-1, -2]]]], ['>=']])
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
-            query.append(['starttime', ['EVENT', 'starttime', -2, ["latest"]], ['<=']])
+            query.append(['starttime', ['EVENT', 'starttime', -2, ["rangeearliest", ["range", [-1, -2]]]], ['<=']])
             query.append(['uuid', ['EVENT', 'uuid', -2, ["any"]], ['NOT']])
         if "STRICTLYBETWEEN" in connector:
-            query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['>']])
+            query.append(['starttime', ['EVENT', 'starttime', -1, ["rangelatest", ["range", [-1, -2]]]], ['>']])
             query.append(['uuid', ['EVENT', 'uuid', -1, ["any"]], ['NOT']])
-            query.append(['starttime', ['EVENT', 'starttime', -2, ["latest"]], ['<']])
+            query.append(['starttime', ['EVENT', 'starttime', -2, ["rangeearliest", ["range", [-1, -2]]]], ['<']])
             query.append(['uuid', ['EVENT', 'uuid', -2, ["any"]], ['NOT']])
         if "PRECEDEDBY" in connector:
             query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['>=']])
@@ -1854,3 +1915,35 @@ if __name__ == '__main__':
     assert len(test2[0]) == 2
     print(test2[2])
     log("")
+    
+    
+    #PRECEDEDBY and BETWEEN TESTING
+    eventList = [{'uuid':[1], 'endtime': datetime(2010, 5, 26, 10, 0), 'type': 'admin ', 'description': 'startadmission ', 'starttime': datetime(2010, 5, 26, 10, 0), 'number': 1},
+    {'uuid':[2], 'code': u'E66.9 ', 'endtime': datetime(2013, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'obesity, unspecified ', 'starttime': datetime(2013, 5, 28, 19, 9), 'number': 4}, 
+    {'uuid':[3], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 20, 9), 'number': 2},   #same time as 2
+    {'uuid':[4], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 21, 9), 'number': 3},   #1 day later
+    {'uuid':[5], 'code': u'Z86.43 ', 'endtime': datetime(2014, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'personal history of tobacco use disorder ', 'starttime': datetime(2014, 5, 28, 22, 9), 'number': 5}, 
+    ]
+    
+    instr = "obesity FOLLOWEDBY intracranial NOT BETWEEN intracranial ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 65 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 1
+    print(test2[2])
+    log("")
+    
+    #debug = True
+    debug2 = True
+    instr = "intracranial PRECEDEDBY obesity NOT BETWEEN intracranial ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 66 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 1
+    print(test2[2])
+    log("")
+    
+    
+    
