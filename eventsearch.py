@@ -512,6 +512,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                                     if time == "":
                                         continue
                                     if isinstance(time, list):
+                                        latestt = 0
                                         for t in time:
                                             if t == "":
                                                 continue
@@ -533,6 +534,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                                     if time == "":
                                         continue
                                     if isinstance(time, list):
+                                        earliestt = 0
                                         for t in time:
                                             if t == "":
                                                 continue
