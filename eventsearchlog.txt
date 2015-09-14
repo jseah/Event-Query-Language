@@ -228,31 +228,31 @@ DESCRIPTION intracranial AND DESCRIPTION obesity STARTTIME ASPREVIOUS BEFORE OFF
 3 unit test 54 end [[2], [5]] [[3], [5]] [[15], [14]] 
 
 start chopped list
-2015-09-13 21:10:01.957261
+2015-09-14 19:41:49.719373
 DESCRIPTION hypertension GET uuid ENDSEARCH
 25 unit test 55 end
 chopped list done
-2015-09-13 21:10:01.977262
-time taken: 0:00:00.020001
+2015-09-14 19:41:49.739377
+time taken: 0:00:00.020004
 
 start SAMEADMISSION test
-2015-09-13 21:10:01.977262
+2015-09-14 19:41:49.739377
 (SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
 26 unit test 56 end [[200611130004]] [[200903110020]] [[200910260003]] [[200912060002]] [[201007060002]] [[201012210003]] [[201104280004]] [[201111130004]] [[201205010005]] [[201205290003]] [[201211010005]] [[201212120006]] [[201212120014]] [[201301230003]] [[201303070002]] [[201303130004]] [[201304050005]] [[201304220004]] [[201305050007]] [[201305160004]] [[201310120004]] [[201310260004]] [[201311280003]] [[201408200002]] [[201411060002]] [[201411210003]] 
-2015-09-13 21:10:02.017264
-time taken: 0:00:00.040002
+2015-09-14 19:41:49.769381
+time taken: 0:00:00.030004
 
-2015-09-13 21:10:02.017264
+2015-09-14 19:41:49.769381
 DOESNOTEXIST doesnotexist OR (SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
 26 unit test 57 end ['', [200611130004]] ['', [200903110020]] ['', [200910260003]] ['', [200912060002]] ['', [201007060002]] ['', [201012210003]] ['', [201104280004]] ['', [201111130004]] ['', [201205010005]] ['', [201205290003]] ['', [201211010005]] ['', [201212120006]] ['', [201212120014]] ['', [201301230003]] ['', [201303070002]] ['', [201303130004]] ['', [201304050005]] ['', [201304220004]] ['', [201305050007]] ['', [201305160004]] ['', [201310120004]] ['', [201310260004]] ['', [201311280003]] ['', [201408200002]] ['', [201411060002]] ['', [201411210003]] 
-2015-09-13 21:10:02.057271
-time taken: 0:00:00.040007
+2015-09-14 19:41:49.809378
+time taken: 0:00:00.039997
 
-2015-09-13 21:10:02.057271
+2015-09-14 19:41:49.809378
 (SAMEADMISSION DESCRIPTION infection FOLLOWEDBY isolation) ENDSEARCH
 4 unit test 58 end [[200903110009], [200903110018]] [[201111130005], [201111130009]] [[201205010009], [201205010013]] [[201411210002], [201411210005]] 
-2015-09-13 21:10:02.087274
-time taken: 0:00:00.030003
+2015-09-14 19:41:49.839382
+time taken: 0:00:00.030004
 
 DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (TYPE diagnosis GET description AND TYPE pathology TEST Sodium RESULT NUMERIC GREATERTHANEQUALS 0.000000 RESULT NUMERIC LESSTHANEQUALS 120.000000 GET result) ENDSEARCH
 2 unit test 59 end [[13], [16], [14], [17]] [[13], [16], [15], [17]] 
@@ -278,119 +278,171 @@ obesity FOLLOWEDBY intracranial NOT STRICTLYBETWEEN intracranial ENDSEARCH
 obesity FOLLOWEDBY intracranial NOT BETWEEN intracranial ENDSEARCH
 1 unit test 65 end [[2], [3]] 
 
+intracranial PRECEDEDBY obesity NOT BETWEEN intracranial ENDSEARCH
+1 unit test 66 end [[3], [2]] 
+
 
 start: 0 ; max: 3 ; found: 0 ; getsfound: 0 ; ornotflag: False
 query number: 0; list of events remaining: [[3]] [[4]] ; getcount: 2  <--
 0 [['ANY', 'intracranial', []]] ['AND'] test
 [False, False]
 query number: 1; list of events remaining: ; getcount: 0
-1 [['ANY', 'obesity', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]] ['AND'] test
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
 []
 query number: 2; list of events remaining: ; getcount: 0
-2 [['ANY', 'intracranial', []], ['starttime', ['EVENT', 'starttime', -1, ['rangelatest', ['range', [-1, -2]]]], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']], ['starttime', ['EVENT', 'starttime', -2, ['rangeearliest', ['range', [-1, -2]]]], ['<=']], ['uuid', ['EVENT', 'uuid', -2, ['any']], ['NOT']]] ['NOT'] test
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
 []
 [[[], []], [], []]
 
-buildquery: [['ANY', 'obesity', []], ('starttime', datetime.datetime(2013, 5, 28, 20, 9), ['>=']), ('uuid', [3], ['NOT'])]
+buildquery: [['ANY', 'obesity', []]]
 start: 0 ; max: 3 ; found: 0 ; getsfound: 0 ; ornotflag: False
+query number: 0; list of events remaining: [[4]] ; getcount: 1
+0 [['ANY', 'intracranial', []]] ['AND'] test
+[False]
+query number: 1; list of events remaining: [[3]] [[3], [2]] ; getcount: 2  <--
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
+[False, True]
+query number: 2; list of events remaining: ; getcount: 0
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
+[]
+[[[]], [[], [[]]], []]
+
+buildquery: [['ANY', 'intracranial', []], ('uuid', [3], ['NOT'])]
+start: 0 ; max: 3 ; found: 0 ; getsfound: 0 ; ornotflag: False
+query number: 0; list of events remaining: [[4]] ; getcount: 1
+0 [['ANY', 'intracranial', []]] ['AND'] test
+[False]
+query number: 1; list of events remaining: [[3], [2]] ; getcount: 1
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
+[True]
+query number: 2; list of events remaining: [[3], [4]] ; getcount: 1  <--
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
+[True]
+[[[]], [[[]]], [[[]]]]
+
+start: 0 ; max: 3 ; found: 1 ; getsfound: 1 ; ornotflag: False
 query number: 0; list of events remaining: [[4]] ; getcount: 1
 0 [['ANY', 'intracranial', []]] ['AND'] test
 [False]
 query number: 1; list of events remaining: [[3], [2]] ; getcount: 1  <--
-1 [['ANY', 'obesity', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]] ['AND'] test
-[False]
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
+[True]
 query number: 2; list of events remaining: ; getcount: 0
-2 [['ANY', 'intracranial', []], ['starttime', ['EVENT', 'starttime', -1, ['rangelatest', ['range', [-1, -2]]]], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']], ['starttime', ['EVENT', 'starttime', -2, ['rangeearliest', ['range', [-1, -2]]]], ['<=']], ['uuid', ['EVENT', 'uuid', -2, ['any']], ['NOT']]] ['NOT'] test
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
 []
 [[[]], [[[]]], []]
 
-buildquery: [['ANY', 'intracranial', []], ('starttime', datetime.datetime(2013, 5, 28, 20, 9), ['>=']), ('uuid', [2], ['NOT']), ('starttime', datetime.datetime(2013, 5, 28, 19, 9), ['<=']), ('uuid', [3], ['NOT'])]
-start: 0 ; max: 3 ; found: 0 ; getsfound: 0 ; ornotflag: False
+buildquery: [['ANY', 'intracranial', []], ('uuid', [2], ['NOT'])]
+start: 0 ; max: 3 ; found: 1 ; getsfound: 1 ; ornotflag: False
 query number: 0; list of events remaining: [[4]] ; getcount: 1
 0 [['ANY', 'intracranial', []]] ['AND'] test
 [False]
 query number: 1; list of events remaining: ; getcount: 0
-1 [['ANY', 'obesity', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]] ['AND'] test
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
 []
-query number: 2; list of events remaining: [[3], [2]] ; getcount: 1  <--
-2 [['ANY', 'intracranial', []], ['starttime', ['EVENT', 'starttime', -1, ['rangelatest', ['range', [-1, -2]]]], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']], ['starttime', ['EVENT', 'starttime', -2, ['rangeearliest', ['range', [-1, -2]]]], ['<=']], ['uuid', ['EVENT', 'uuid', -2, ['any']], ['NOT']]] ['NOT'] test
-[False]
-[[[]], [], [[[]]]]
+query number: 2; list of events remaining: [[3], [2]] [[3], [2], [3]] [[3], [2], [4]] ; getcount: 3  <--
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
+[True, True, True]
+[[[]], [], [[[]], [[], []], [[], []]]]
 
-start: 0 ; max: 3 ; found: 1 ; getsfound: 1 ; ornotflag: False
+start: 0 ; max: 3 ; found: 4 ; getsfound: 4 ; ornotflag: False
 query number: 0; list of events remaining: [[4]] ; getcount: 1
 0 [['ANY', 'intracranial', []]] ['AND'] test
 [False]
 query number: 1; list of events remaining: ; getcount: 0  <--
-1 [['ANY', 'obesity', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]] ['AND'] test
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
 []
 query number: 2; list of events remaining: ; getcount: 0
-2 [['ANY', 'intracranial', []], ['starttime', ['EVENT', 'starttime', -1, ['rangelatest', ['range', [-1, -2]]]], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']], ['starttime', ['EVENT', 'starttime', -2, ['rangeearliest', ['range', [-1, -2]]]], ['<=']], ['uuid', ['EVENT', 'uuid', -2, ['any']], ['NOT']]] ['NOT'] test
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
 []
 [[[]], [], []]
 
-start: 0 ; max: 3 ; found: 1 ; getsfound: 1 ; ornotflag: False
+start: 0 ; max: 3 ; found: 4 ; getsfound: 4 ; ornotflag: False
 query number: 0; list of events remaining: [[4]] ; getcount: 1  <--
 0 [['ANY', 'intracranial', []]] ['AND'] test
 [False]
 query number: 1; list of events remaining: ; getcount: 0
-1 [['ANY', 'obesity', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]] ['AND'] test
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
 []
 query number: 2; list of events remaining: ; getcount: 0
-2 [['ANY', 'intracranial', []], ['starttime', ['EVENT', 'starttime', -1, ['rangelatest', ['range', [-1, -2]]]], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']], ['starttime', ['EVENT', 'starttime', -2, ['rangeearliest', ['range', [-1, -2]]]], ['<=']], ['uuid', ['EVENT', 'uuid', -2, ['any']], ['NOT']]] ['NOT'] test
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
 []
 [[[]], [], []]
 
-buildquery: [['ANY', 'obesity', []], ('starttime', datetime.datetime(2013, 5, 28, 21, 9), ['>=']), ('uuid', [4], ['NOT'])]
-start: 0 ; max: 3 ; found: 1 ; getsfound: 1 ; ornotflag: False
+buildquery: [['ANY', 'obesity', []]]
+start: 0 ; max: 3 ; found: 4 ; getsfound: 4 ; ornotflag: False
+query number: 0; list of events remaining: ; getcount: 0
+0 [['ANY', 'intracranial', []]] ['AND'] test
+[]
+query number: 1; list of events remaining: [[4]] [[4], [2]] ; getcount: 2  <--
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
+[False, True]
+query number: 2; list of events remaining: ; getcount: 0
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
+[]
+[[], [[], [[]]], []]
+
+buildquery: [['ANY', 'intracranial', []], ('uuid', [4], ['NOT'])]
+start: 0 ; max: 3 ; found: 4 ; getsfound: 4 ; ornotflag: False
+query number: 0; list of events remaining: ; getcount: 0
+0 [['ANY', 'intracranial', []]] ['AND'] test
+[]
+query number: 1; list of events remaining: [[4], [2]] ; getcount: 1
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
+[True]
+query number: 2; list of events remaining: [[4], [3]] ; getcount: 1  <--
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
+[True]
+[[], [[[]]], [[[]]]]
+
+start: 0 ; max: 3 ; found: 5 ; getsfound: 5 ; ornotflag: False
 query number: 0; list of events remaining: ; getcount: 0
 0 [['ANY', 'intracranial', []]] ['AND'] test
 []
 query number: 1; list of events remaining: [[4], [2]] ; getcount: 1  <--
-1 [['ANY', 'obesity', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]] ['AND'] test
-[False]
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
+[True]
 query number: 2; list of events remaining: ; getcount: 0
-2 [['ANY', 'intracranial', []], ['starttime', ['EVENT', 'starttime', -1, ['rangelatest', ['range', [-1, -2]]]], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']], ['starttime', ['EVENT', 'starttime', -2, ['rangeearliest', ['range', [-1, -2]]]], ['<=']], ['uuid', ['EVENT', 'uuid', -2, ['any']], ['NOT']]] ['NOT'] test
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
 []
 [[], [[[]]], []]
 
-buildquery: [['ANY', 'intracranial', []], ('starttime', datetime.datetime(2013, 5, 28, 21, 9), ['>=']), ('uuid', [2], ['NOT']), ('starttime', datetime.datetime(2013, 5, 28, 19, 9), ['<=']), ('uuid', [4], ['NOT'])]
-start: 0 ; max: 3 ; found: 1 ; getsfound: 1 ; ornotflag: False
+buildquery: [['ANY', 'intracranial', []], ('uuid', [2], ['NOT'])]
+start: 0 ; max: 3 ; found: 5 ; getsfound: 5 ; ornotflag: False
 query number: 0; list of events remaining: ; getcount: 0
 0 [['ANY', 'intracranial', []]] ['AND'] test
 []
 query number: 1; list of events remaining: ; getcount: 0
-1 [['ANY', 'obesity', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]] ['AND'] test
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
 []
-query number: 2; list of events remaining: ; getcount: 0  <--
-2 [['ANY', 'intracranial', []], ['starttime', ['EVENT', 'starttime', -1, ['rangelatest', ['range', [-1, -2]]]], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']], ['starttime', ['EVENT', 'starttime', -2, ['rangeearliest', ['range', [-1, -2]]]], ['<=']], ['uuid', ['EVENT', 'uuid', -2, ['any']], ['NOT']]] ['NOT'] test
-[]
-[[], [], []]
+query number: 2; list of events remaining: [[4], [2]] [[4], [2], [3]] [[4], [2], [4]] ; getcount: 3  <--
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
+[True, True, True]
+[[], [], [[[]], [[], []], [[], []]]]
 
-start: 0 ; max: 3 ; found: 1 ; getsfound: 1 ; ornotflag: False
+start: 0 ; max: 3 ; found: 8 ; getsfound: 8 ; ornotflag: False
 query number: 0; list of events remaining: ; getcount: 0
 0 [['ANY', 'intracranial', []]] ['AND'] test
 []
 query number: 1; list of events remaining: ; getcount: 0  <--
-1 [['ANY', 'obesity', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]] ['AND'] test
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
 []
 query number: 2; list of events remaining: ; getcount: 0
-2 [['ANY', 'intracranial', []], ['starttime', ['EVENT', 'starttime', -1, ['rangelatest', ['range', [-1, -2]]]], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']], ['starttime', ['EVENT', 'starttime', -2, ['rangeearliest', ['range', [-1, -2]]]], ['<=']], ['uuid', ['EVENT', 'uuid', -2, ['any']], ['NOT']]] ['NOT'] test
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
 []
 [[], [], []]
 
-start: 0 ; max: 3 ; found: 1 ; getsfound: 1 ; ornotflag: False
+start: 0 ; max: 3 ; found: 8 ; getsfound: 8 ; ornotflag: False
 query number: 0; list of events remaining: ; getcount: 0  <--
 0 [['ANY', 'intracranial', []]] ['AND'] test
 []
 query number: 1; list of events remaining: ; getcount: 0
-1 [['ANY', 'obesity', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]] ['AND'] test
+1 [['ANY', 'obesity', []]] ['AND', 'OR'] test
 []
 query number: 2; list of events remaining: ; getcount: 0
-2 [['ANY', 'intracranial', []], ['starttime', ['EVENT', 'starttime', -1, ['rangelatest', ['range', [-1, -2]]]], ['>=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']], ['starttime', ['EVENT', 'starttime', -2, ['rangeearliest', ['range', [-1, -2]]]], ['<=']], ['uuid', ['EVENT', 'uuid', -2, ['any']], ['NOT']]] ['NOT'] test
+2 [['ANY', 'intracranial', []], ['uuid', ['EVENT', 'uuid', -1, []], ['NOT']]] ['ENDOR'] test
 []
 [[], [], []]
 
-intracranial PRECEDEDBY obesity NOT BETWEEN intracranial ENDSEARCH
-1 unit test 66 end [[3], [2]] 
-
+intracranial AND obesity OR AND intracranial NOT UUID ASPREVIOUS UUID ENDSEARCH
+8 unit test 67 end [[3], [4]] [[3], [2]] [[3], [2], [3]] [[3], [2], [4]] [[4], [3]] [[4], [2]] [[4], [2], [3]] [[4], [2], [4]] 
