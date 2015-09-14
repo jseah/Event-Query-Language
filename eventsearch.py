@@ -1077,7 +1077,6 @@ def parsekeyconstraint(userquery):
                 ASPREVIOUSinword = True
         if word.isupper() and word not in notkeys and not ASPREVIOUSinword and not word[:6] == "OFFSET":              #found key, begin new searchterm
             searchterm.append(word.lower())
-            print(searchterm, userquery)
             i = i + 1
             if not (i == len(userquery)):
                 word = userquery[i]
@@ -1947,14 +1946,12 @@ if __name__ == '__main__':
     print(test2[2])
     log("")
     
-    debug = True
-    debug2 = True
-    instr = "intracranial AND obesity OR AND intracranial NOT UUID ASPREVIOUS UUID ENDSEARCH"
+    instr = "intracranial AND obesity ONEOF AND intracranial NOT UUID ASPREVIOUS UUID ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
     log(str(len(test2[0])) + " unit test 67 end " + printuuid(test2[0]))
-    assert len(test2[0]) == 1
+    assert len(test2[0]) == 4
     print(test2[2])
     log("")
     
