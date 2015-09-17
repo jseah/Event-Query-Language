@@ -596,6 +596,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         getfounds.append(g)
             for eventcount in range(0, len(eventfounds)):
                 e = eventfounds[eventcount]
+                #if debug2: print(e)
                 allkeysmatch = True
                 for keyconstraint in buildquery:
                     key = keyconstraint[0]
@@ -609,7 +610,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         break
                     constraintmatch = True
                     for value in e[key]:                        #key is present, check if key matches constraint
-                        #print(value)
+                        #if debug2: print(key, value)
                         if value == "":                 #OR appends empty strings
                             keyvaluematching = (not 'NOT' in flags)
                         else:
@@ -698,7 +699,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
             eventfoundquerylist[nextdepth] = nexteventfoundlist
             getsquerylist[nextdepth] = nextgetquerylist
         if connectors[eventfoundquerydepth + 1][0] == 'NOT':       #NOT connectors only pass if they find nothing
-            #print("test")
+            #if debug2: print(extracted)
             if len(extracted) == 0:                         #found nothing, copy currenteventfound as next eventfoundlist of size 1
                 nexteventfoundlist = []
                 nexteventfound = copy.deepcopy(currenteventfound)
@@ -1946,13 +1947,36 @@ if __name__ == '__main__':
     print(test2[2])
     log("")
     
-    instr = "intracranial AND obesity ONEOF AND intracranial NOT UUID ASPREVIOUS UUID ENDSEARCH"
+    instr = "obesity AND intracranial OR AND intracranial NOT UUID ASPREVIOUS UUID ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
     log(str(len(test2[0])) + " unit test 67 end " + printuuid(test2[0]))
-    assert len(test2[0]) == 4
+    assert len(test2[0]) == 6
     print(test2[2])
     log("")
     
+    eventList = [{'uuid':[1], 'endtime': datetime(2010, 5, 26, 10, 0), 'type': 'admin ', 'description': 'benign intracranial hypertension ', 'starttime': datetime(2010, 5, 26, 10, 0), 'number': 1},
+    {'uuid':[2], 'code': u'E66.9 ', 'endtime': datetime(2013, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 19, 9), 'number': 1}, 
+    {'uuid':[3], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 20, 9), 'number': 4},   #same time as 2
+    {'uuid':[4], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 21, 9), 'number': 4},   #1 day later
+    {'uuid':[5], 'code': u'Z86.43 ', 'endtime': datetime(2014, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2014, 5, 28, 22, 9), 'number': 3}, 
+    ]
     
+    instr = "intracranial NOT AND intracranial NUMBER ASPREVIOUS GREATERTHAN NUMBER ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 68 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 2
+    print(test2[2])
+    log("")
+    
+    instr = "intracranial NOT AND intracranial NUMBER ASPREVIOUS GREATERTHAN NUMBER NOT AND intracranial NUMBER ASPREVIOUS EQUALS NUMBER STARTTIME ASPREVIOUS STRICTLYBEFORE STARTTIME ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 69 end " + printuuid(test2[0]))
+    #assert len(test2[0]) == 2
+    print(test2[2])
+    log("")
