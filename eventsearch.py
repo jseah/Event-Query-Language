@@ -111,6 +111,7 @@ def valuematcheskey(value, key, constraint, flags):
                 if not constraint == value:
                     constraintmatch = False
     elif isinstance(constraint, datetime):  #is a date
+        #print(constraint, value, flags)
         if len(prunedflags) == 0:
             if not constraint == value:
                 constraintmatch = False
@@ -1198,10 +1199,18 @@ def converttime(time):              #YYYY_MM_DD_HH_MM_SS
 def converttimedelta(time):              #DD_HH_MM_SS
     length = len(time)
     timesteps = time.split()
-    dt = []
-    for timestep in timesteps:
-        dt.append(int(timestep))
-    return timedelta(*dt)
+    dt = timedelta(0)
+    for i in range(len(timesteps)):
+        timestep = timesteps[i]
+        if i == 0:
+            dt = dt + timedelta(days = float(timestep))
+        if i == 1:
+            dt = dt + timedelta(hours = float(timestep))
+        if i == 2:
+            dt = dt + timedelta(minutes = float(timestep))
+        if i == 3:
+            dt = dt + timedelta(seconds = float(timestep))
+    return dt
 
 def printuuid(eventfoundset):
     restr = ""
@@ -1958,8 +1967,8 @@ if __name__ == '__main__':
     
     eventList = [{'uuid':[1], 'endtime': datetime(2010, 5, 26, 10, 0), 'type': 'admin ', 'description': 'benign intracranial hypertension ', 'starttime': datetime(2010, 5, 26, 10, 0), 'number': 1},
     {'uuid':[2], 'code': u'E66.9 ', 'endtime': datetime(2013, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 19, 9), 'number': 1}, 
-    {'uuid':[3], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 20, 9), 'number': 4},   #same time as 2
-    {'uuid':[4], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 21, 9), 'number': 4},   #1 day later
+    {'uuid':[3], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 19, 9), 'number': 4},   #same time as 2
+    {'uuid':[4], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 20, 9), 'number': 4},   #1 hour later
     {'uuid':[5], 'code': u'Z86.43 ', 'endtime': datetime(2014, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2014, 5, 28, 22, 9), 'number': 3}, 
     ]
     
@@ -1977,6 +1986,16 @@ if __name__ == '__main__':
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
     log(str(len(test2[0])) + " unit test 69 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 1
+    print(test2[2])
+    log("")
+    
+    instr = "intracranial AND STARTTIME ASPREVIOUS BEFORE OFFSETT+00_08 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT-00_08 STARTTIME ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 70 end " + printuuid(test2[0]))
     #assert len(test2[0]) == 2
     print(test2[2])
     log("")
+    
