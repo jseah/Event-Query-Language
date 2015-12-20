@@ -9,6 +9,7 @@ from datetime import *
 
 import copy
 import pprint
+import pickle
 keyswithlisttypevalues = ['uuid']
 debug = False
 debug2 = False
@@ -644,7 +645,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     for k in event:
                         if k not in currenteventfound:
                             nexteventfound[k] = []
-                            for i in range(0, getreturncountatdepth(queries, eventfoundquerydepth)):        #keys not previously present get filled with empty strings up until the expected number of returns
+                            for i in range(0, getreturncountatdepth(queries, connectors, eventfoundquerydepth)):        #keys not previously present get filled with empty strings up until the expected number of returns
                                 nexteventfound[k].append('')
                 for k in nexteventfound:
                     keycollectvalues = []
@@ -680,7 +681,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                             nexteventfound[k].append(v)                 #brackets get handled as list objects
                         else:
                             nexteventfound[k] = []
-                            for i in range(0, getreturncountatdepth(queries, eventfoundquerydepth)):        #keys not previously present get filled with empty strings up until the current query number
+                            for i in range(0, getreturncountatdepth(queries, connectors, eventfoundquerydepth)):        #keys not previously present get filled with empty strings up until the current query number
                                 nexteventfound[k].append('')
                             nexteventfound[k].append(v)
                     nexteventfoundlist.append(nexteventfound)
@@ -747,7 +748,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                             v = event[k]
                             if k not in currenteventfound:
                                 nexteventfound[k] = []
-                                for i in range(0, getreturncountatdepth(queries, eventfoundquerydepth)):        #keys not previously present get filled with empty strings up until the current query number
+                                for i in range(0, getreturncountatdepth(queries, connectors, eventfoundquerydepth)):        #keys not previously present get filled with empty strings up until the current query number
                                     nexteventfound[k].append('')
                     for k in nexteventfound:
                         keycollectvalues = []
@@ -783,7 +784,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                                 nexteventfound[k].append(v)                 #brackets get handled as list objects
                             else:
                                 nexteventfound[k] = []
-                                for i in range(0, getreturncountatdepth(queries, eventfoundquerydepth)):        #keys not previously present get filled with empty strings up until the current query number
+                                for i in range(0, getreturncountatdepth(queries, connectors, eventfoundquerydepth)):        #keys not previously present get filled with empty strings up until the current query number
                                     nexteventfound[k].append('')
                                 nexteventfound[k].append(v)
                         nexteventfoundlist.append(nexteventfound)
@@ -1014,10 +1015,10 @@ def translate(userquery):
         querylist.pop(0)
         connectors.pop(0)
     
-    #Propagate NOT flag for ( to the corresponding ); this allows NOT ( to work if the statement begins with it
     i = 0
     for i in range(0, len(querylist)):
         query = querylist[i]
+        #Propagate NOT flag for ( to the corresponding ); this allows NOT ( to work if the statement begins with it
         if query[0][0] == '(' and 'NOT' in connectors[i]:
             currentindex = i + 1
             bracketcount = 1
@@ -1029,6 +1030,20 @@ def translate(userquery):
                     bracketcount = bracketcount - 1
                     if bracketcount == 0:
                         connectors[currentindex][0] = 'NOT'
+                        break
+                currentindex = currentindex + 1
+        #Propagate ENDOR flag for ( to the corresponding ); this allows OR AND and ONEOF AND ( to work
+        if query[0][0] == '(' and 'ENDOR' in connectors[i]:
+            currentindex = i + 1
+            bracketcount = 1
+            while True:
+                query2 = querylist[currentindex]
+                if query2[0][0] == '(':
+                    bracketcount = bracketcount + 1
+                if query2[0][0] == ')':
+                    bracketcount = bracketcount - 1
+                    if bracketcount == 0:
+                        connectors[currentindex][0] = 'ENDOR'
                         break
                 currentindex = currentindex + 1
     
@@ -1050,7 +1065,7 @@ def translate(userquery):
         print("query list:")
         for i in range(0, len(querylist)):
             try:
-                print(querylist[i], connectors[i], gets[i])
+                pprint.pprint([querylist[i], connectors[i], gets[i]])
             except:
                 pass
     return querylist, connectors, gets
@@ -1213,10 +1228,10 @@ def converttimedelta(time):              #DD_HH_MM_SS
     return dt
 
 def printuuid(eventfoundset):
-    restr = ""
+    restr = "\n"
     for e in eventfoundset:
         try:
-            restr = restr + str(e['uuid']) + " "
+            restr = restr + str(e['uuid']) + " \n"
         except:
             restr = restr + " none "
     return restr
@@ -1229,18 +1244,23 @@ def getbracketcountatdepth(querylist, depth):
             count = count + 1
     return count
 
-def getreturncountatdepth(querylist, depth):
+def getreturncountatdepth(querylist, connectors, depth):
     count = 0
+    oneofflag = False
     bracketcount = 0
     while depth >= 0:
         query = querylist[depth]
-        if query[0][0] == ')':
+        if query[0][0] == ')':          #brackets do not generate returns
             bracketcount = bracketcount + 1
         if query[0][0] == '(':
             bracketcount = bracketcount - 1
         if bracketcount < 0:
             break
-        if bracketcount == 0:
+        if 'ONEOF' in connectors[depth]:        #ONEOF only generates one return at the ENDOR
+            oneofflag = True
+        if 'ENDOR' in connectors[depth] and not 'ONEOF' in connectors[depth] and query[0][0] != "(":            #Open brackets have ENDORs in the middle of a ONEOF block but without ONEOFs
+            oneofflag = False
+        if bracketcount == 0 and not oneofflag:
             count = count + 1
         depth = depth - 1
     return count
@@ -1737,15 +1757,13 @@ if __name__ == '__main__':
     {'uuid':[16], 'endtime': datetime(2019, 11, 28, 20, 9, 1), 'type': 'admin ', 'description': 'endadmission ', 'starttime': datetime(2019, 11, 28, 20, 9, 1), 'number': 10, 'unit': 'BLA'}
     ]
     
-    instr = "DESCRIPTION intracranial ONEOF AND DESCRIPTION startadmission ENDSEARCH"
+    instr = "(DESCRIPTION intracranial) ONEOF AND (DESCRIPTION startadmission) ONEOF AND (DESCRIPTION obesity) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
     log(str(len(test2[0])) + " unit test 48 end " + printuuid(test2[0]) + "\n")
-    assert len(test2[0]) == 6
+    assert len(test2[0]) == 9
     
-    #debug = True
-    #debug2 = True
     instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (DESCRIPTION obesity GET uuid ONEOF AND DESCRIPTION hypertension GET uuid) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
@@ -1998,4 +2016,3 @@ if __name__ == '__main__':
     #assert len(test2[0]) == 2
     print(test2[2])
     log("")
-    
