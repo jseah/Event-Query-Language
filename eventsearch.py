@@ -7,6 +7,7 @@ except:
 
 from datetime import *
 
+import pdb
 import copy
 import pprint
 import pickle
@@ -336,6 +337,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
     
     if debug2:
         log("")
+        currentgetsquerylist = []
     #print(getsquerylist)
     ###BEGIN MAIN ITERATION LOOP###
     while True:
@@ -358,9 +360,13 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     except:
                         pass
                 #print(eventfoundquerylist[i])
-            log(str(getsquerylist))
-            print(eventfoundquerydepth)
+            #log(str(getsquerylist))
+            log(eventfoundquerydepth)
+            for i in range(len(connectors)):
+                log(connectors[i], getsquerylist[i])
+            #pprint.pprint(getsquerylist)
             log("")
+            pdb.set_trace()
         #DEBUG END
         currenteventfoundlist = eventfoundquerylist[eventfoundquerydepth]
         currentgetsquerylist = getsquerylist[eventfoundquerydepth]
@@ -578,6 +584,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
         
         nextgetquerylist = []
         getbracketreturnflag = False
+        bracketnextgetquery = []
         #keyconstraints processed, get output and check
         if not(query[0][0] == "("):                 #1st key is not a '(', not a bracket
             extracted = extract(eventList, buildquery)
@@ -632,8 +639,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     extracted.append(e)
                     getbracketreturnflag = True             #disables writing to the GET stack for later portions because it's done here; except for OR propagation
                     nextgetquery = copy.deepcopy(currentgetsquery)
-                    nextgetquery.append(getfounds[eventcount])
-                    nextgetquerylist.append(nextgetquery)
+                    nextgetquery.append(getfounds[eventcount])      #if statement needed for dealing with ENDOR
+                    bracketnextgetquery.append(nextgetquery)
         
         #got the returns, check for connector flags (AND/OR/NOT)
         #OR checks at the target write point instead of simply next connector to support this: ") OR" will close brackets then OR
@@ -671,6 +678,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     else:
                         nextgetquery.append([])
                     nextgetquerylist.append(nextgetquery)
+                if getbracketreturnflag:
+                    nextgetquerylist.extend(bracketnextgetquery)
             else:                                                     #default
                 for event in extracted:
                     orstate[nextdepth].append(False)                   #if this connector is not OR, always set to false
@@ -698,6 +707,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         else:
                             nextgetquery.append([])
                         nextgetquerylist.append(nextgetquery)
+                if getbracketreturnflag:
+                    nextgetquerylist.extend(bracketnextgetquery)
             eventfoundquerylist[nextdepth] = nexteventfoundlist
             getsquerylist[nextdepth] = nextgetquerylist
         if connectors[eventfoundquerydepth + 1][0] == 'NOT':       #NOT connectors only pass if they find nothing
@@ -774,6 +785,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         else:
                             nextgetquery.append([])
                         nextgetquerylist.append(nextgetquery)
+                    if getbracketreturnflag:
+                        nextgetquerylist.extend(bracketnextgetquery)
                 elif 'ONEOF' not in connectors[eventfoundquerydepth] or ('ONEOF' in connectors[eventfoundquerydepth] and not currentorstate):               #default
                     for event in extracted:
                         orstate[nextdepth].append(True)                #Found something!  ORstate set
@@ -801,6 +814,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                             else:
                                 nextgetquery.append([])
                             nextgetquerylist.append(nextgetquery)
+                    if getbracketreturnflag:
+                        nextgetquerylist.extend(bracketnextgetquery)
                 eventfoundquerylist[nextdepth] = nexteventfoundlist
                 getsquerylist[nextdepth] = nextgetquerylist
         eventfoundquerydepth = nextdepth         #follow the new list upwards
@@ -1757,12 +1772,13 @@ if __name__ == '__main__':
     {'uuid':[16], 'endtime': datetime(2019, 11, 28, 20, 9, 1), 'type': 'admin ', 'description': 'endadmission ', 'starttime': datetime(2019, 11, 28, 20, 9, 1), 'number': 10, 'unit': 'BLA'}
     ]
     
-    instr = "(DESCRIPTION intracranial) ONEOF AND (DESCRIPTION startadmission) ONEOF AND (DESCRIPTION obesity) ENDSEARCH"
+    instr = "(DESCRIPTION intracranial GET uuid) ONEOF AND (DESCRIPTION startadmission GET uuid) ONEOF AND (DESCRIPTION obesity GET uuid) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
     log(str(len(test2[0])) + " unit test 48 end " + printuuid(test2[0]) + "\n")
     assert len(test2[0]) == 9
+    pprint.pprint(test2[2])
     
     instr = "DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (DESCRIPTION obesity GET uuid ONEOF AND DESCRIPTION hypertension GET uuid) ENDSEARCH"
     test, connectors, gets = translate(instr)
@@ -2016,3 +2032,4 @@ if __name__ == '__main__':
     #assert len(test2[0]) == 2
     print(test2[2])
     log("")
+    
