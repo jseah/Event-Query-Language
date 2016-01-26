@@ -318,14 +318,16 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
         if not getbracketreturnflag and 'NOT' not in connectors[eventfoundquerydepth]:
             nextgetquery = []
             if len(gets[eventfoundquerydepth]) > 0:
+                buildgetquery = []
                 for getquery in gets[eventfoundquerydepth]:
                     getkey = getquery[1]
                     if getkey not in addevent:
-                        nextgetquery.append(None)
+                        buildgetquery.append(None)
                         #err = KeyNotFoundError("'" + str(eventkey) + "' key to be extracted does not exist in events. ")
                         #raise err
                     else:
-                        nextgetquery.append(addevent[getkey])
+                        buildgetquery.append(addevent[getkey][0])
+                nextgetquery.append(buildgetquery)
             nextgetquerylist.append(nextgetquery)
     eventfoundquerylist[eventfoundquerydepth] = eventfound
     getsquerylist[eventfoundquerydepth] = nextgetquerylist
@@ -354,19 +356,9 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     debugstr = debugstr + '  <--'
                 if not(debugstr == ""):
                     log(debugstr)
-                    try:
-                        log(str(i) + " " + str(queries[i]) + " " + str(connectors[i]) + " test")
-                        log(str(orstate[i]))
-                    except:
-                        pass
-                #print(eventfoundquerylist[i])
-            #log(str(getsquerylist))
-            log(eventfoundquerydepth)
-            for i in range(len(connectors)):
-                log(connectors[i], getsquerylist[i])
-            #pprint.pprint(getsquerylist)
             log("")
-            pdb.set_trace()
+            #pdb.set_trace()
+            #log(getsquerylist)
         #DEBUG END
         currenteventfoundlist = eventfoundquerylist[eventfoundquerydepth]
         currentgetsquerylist = getsquerylist[eventfoundquerydepth]
@@ -579,8 +571,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
             else:
                 buildquery.append( copy.deepcopy(keyconstraint) )
         
-        if debug2:
-            log("buildquery: " + str(buildquery))
+        #if debug2:
+        #    log("buildquery: " + str(buildquery))
         
         nextgetquerylist = []
         getbracketreturnflag = False
@@ -1662,7 +1654,7 @@ if __name__ == '__main__':
     log(str(len(test2[0])) + " unit test 39 end " + printuuid(test2[0]) + "\n")
     assert len(test2[0]) == 1
     
-    instr = "DESCRIPTION intracranial GET uuid GET starttime FOLLOWEDBY obesity GET uuid OR FOLLOWEDBY TEST ferritin GET uuid ENDSEARCH"
+    instr = "DESCRIPTION intracranial GET uuid GET starttime FOLLOWEDBY obesity GET uuid GET starttime OR FOLLOWEDBY TEST ferritin GET uuid GET starttime ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)

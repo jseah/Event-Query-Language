@@ -283,16 +283,16 @@ NOT (DOESNOTEXIST doesnotexist) AND DESCRIPTION startadmission ENDSEARCH
 ['', [1]] 
 
 
-DESCRIPTION intracranial GET uuid GET starttime FOLLOWEDBY obesity GET uuid OR FOLLOWEDBY TEST ferritin GET uuid ENDSEARCH
+DESCRIPTION intracranial GET uuid GET starttime FOLLOWEDBY obesity GET uuid GET starttime OR FOLLOWEDBY TEST ferritin GET uuid GET starttime ENDSEARCH
 GET: 
-[[[2]], [datetime.datetime(2011, 5, 28, 18, 9)], [[7]]]
-[[[2]], [datetime.datetime(2011, 5, 28, 18, 9)], [[5]]]
-[[[2]], [datetime.datetime(2011, 5, 28, 18, 9)], [[5]], [[7]]]
-[[[2]], [datetime.datetime(2011, 5, 28, 18, 9)], [[8]]]
-[[[3]], [datetime.datetime(2012, 5, 28, 18, 10)], [[7]]]
-[[[3]], [datetime.datetime(2012, 5, 28, 18, 10)], [[5]]]
-[[[3]], [datetime.datetime(2012, 5, 28, 18, 10)], [[5]], [[7]]]
-[[[3]], [datetime.datetime(2012, 5, 28, 18, 10)], [[8]]]
+[[[2], datetime.datetime(2011, 5, 28, 18, 9)], [[7], datetime.datetime(2015, 5, 28, 20, 9)]]
+[[[2], datetime.datetime(2011, 5, 28, 18, 9)], [[5], datetime.datetime(2013, 5, 28, 18, 9)]]
+[[[2], datetime.datetime(2011, 5, 28, 18, 9)], [[5], datetime.datetime(2013, 5, 28, 18, 9)], [[7], datetime.datetime(2015, 5, 28, 20, 9)]]
+[[[2], datetime.datetime(2011, 5, 28, 18, 9)], [[8], datetime.datetime(2015, 10, 28, 18, 9)]]
+[[[3], datetime.datetime(2012, 5, 28, 18, 10)], [[7], datetime.datetime(2015, 5, 28, 20, 9)]]
+[[[3], datetime.datetime(2012, 5, 28, 18, 10)], [[5], datetime.datetime(2013, 5, 28, 18, 9)]]
+[[[3], datetime.datetime(2012, 5, 28, 18, 10)], [[5], datetime.datetime(2013, 5, 28, 18, 9)], [[7], datetime.datetime(2015, 5, 28, 20, 9)]]
+[[[3], datetime.datetime(2012, 5, 28, 18, 10)], [[8], datetime.datetime(2015, 10, 28, 18, 9)]]
 8 unit test 40 end 
 [[2], [7]] 
 [[2], [5]] 
@@ -479,15 +479,15 @@ DESCRIPTION intracranial AND DESCRIPTION obesity STARTTIME ASPREVIOUS BEFORE OFF
 
 
 start chopped list
-2015-12-22 21:11:47.650605
+2016-01-26 14:00:25.046935
 DESCRIPTION hypertension GET uuid ENDSEARCH
 25 unit test 55 end
 chopped list done
-2015-12-22 21:11:47.666230
-time taken: 0:00:00.015625
+2016-01-26 14:00:25.062559
+time taken: 0:00:00.015624
 
 start SAMEADMISSION test
-2015-12-22 21:11:47.666230
+2016-01-26 14:00:25.062559
 (SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
 26 unit test 56 end 
 [[200611130004]] 
@@ -517,10 +517,10 @@ start SAMEADMISSION test
 [[201411060002]] 
 [[201411210003]] 
 
-2015-12-22 21:11:47.681856
-time taken: 0:00:00.015626
+2016-01-26 14:00:25.093808
+time taken: 0:00:00.031249
 
-2015-12-22 21:11:47.681856
+2016-01-26 14:00:25.093808
 DOESNOTEXIST doesnotexist OR (SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
 26 unit test 57 end 
 ['', [200611130004]] 
@@ -550,10 +550,10 @@ DOESNOTEXIST doesnotexist OR (SAMEADMISSION DESCRIPTION hypertension GET uuid) E
 ['', [201411060002]] 
 ['', [201411210003]] 
 
-2015-12-22 21:11:47.713111
-time taken: 0:00:00.031255
+2016-01-26 14:00:25.125046
+time taken: 0:00:00.031238
 
-2015-12-22 21:11:47.713111
+2016-01-26 14:00:25.125046
 (SAMEADMISSION DESCRIPTION infection FOLLOWEDBY isolation) ENDSEARCH
 4 unit test 58 end 
 [[200903110009], [200903110018]] 
@@ -561,8 +561,8 @@ time taken: 0:00:00.031255
 [[201205010009], [201205010013]] 
 [[201411210002], [201411210005]] 
 
-2015-12-22 21:11:47.744356
-time taken: 0:00:00.031245
+2016-01-26 14:00:25.140671
+time taken: 0:00:00.015625
 
 DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (TYPE diagnosis GET description AND TYPE pathology TEST Sodium RESULT NUMERIC GREATERTHANEQUALS 0.000000 RESULT NUMERIC LESSTHANEQUALS 120.000000 GET result) ENDSEARCH
 2 unit test 59 end 
