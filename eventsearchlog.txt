@@ -285,14 +285,14 @@ NOT (DOESNOTEXIST doesnotexist) AND DESCRIPTION startadmission ENDSEARCH
 
 DESCRIPTION intracranial GET uuid GET starttime FOLLOWEDBY obesity GET uuid GET starttime OR FOLLOWEDBY TEST ferritin GET uuid GET starttime ENDSEARCH
 GET: 
-[[[2], datetime.datetime(2011, 5, 28, 18, 9)], [[7], datetime.datetime(2015, 5, 28, 20, 9)]]
-[[[2], datetime.datetime(2011, 5, 28, 18, 9)], [[5], datetime.datetime(2013, 5, 28, 18, 9)]]
-[[[2], datetime.datetime(2011, 5, 28, 18, 9)], [[5], datetime.datetime(2013, 5, 28, 18, 9)], [[7], datetime.datetime(2015, 5, 28, 20, 9)]]
-[[[2], datetime.datetime(2011, 5, 28, 18, 9)], [[8], datetime.datetime(2015, 10, 28, 18, 9)]]
-[[[3], datetime.datetime(2012, 5, 28, 18, 10)], [[7], datetime.datetime(2015, 5, 28, 20, 9)]]
-[[[3], datetime.datetime(2012, 5, 28, 18, 10)], [[5], datetime.datetime(2013, 5, 28, 18, 9)]]
-[[[3], datetime.datetime(2012, 5, 28, 18, 10)], [[5], datetime.datetime(2013, 5, 28, 18, 9)], [[7], datetime.datetime(2015, 5, 28, 20, 9)]]
-[[[3], datetime.datetime(2012, 5, 28, 18, 10)], [[8], datetime.datetime(2015, 10, 28, 18, 9)]]
+[[0, [2], datetime.datetime(2011, 5, 28, 18, 9)], [2, [7], datetime.datetime(2015, 5, 28, 20, 9)]]
+[[0, [2], datetime.datetime(2011, 5, 28, 18, 9)], [1, [5], datetime.datetime(2013, 5, 28, 18, 9)]]
+[[0, [2], datetime.datetime(2011, 5, 28, 18, 9)], [1, [5], datetime.datetime(2013, 5, 28, 18, 9)], [2, [7], datetime.datetime(2015, 5, 28, 20, 9)]]
+[[0, [2], datetime.datetime(2011, 5, 28, 18, 9)], [1, [8], datetime.datetime(2015, 10, 28, 18, 9)]]
+[[0, [3], datetime.datetime(2012, 5, 28, 18, 10)], [2, [7], datetime.datetime(2015, 5, 28, 20, 9)]]
+[[0, [3], datetime.datetime(2012, 5, 28, 18, 10)], [1, [5], datetime.datetime(2013, 5, 28, 18, 9)]]
+[[0, [3], datetime.datetime(2012, 5, 28, 18, 10)], [1, [5], datetime.datetime(2013, 5, 28, 18, 9)], [2, [7], datetime.datetime(2015, 5, 28, 20, 9)]]
+[[0, [3], datetime.datetime(2012, 5, 28, 18, 10)], [1, [8], datetime.datetime(2015, 10, 28, 18, 9)]]
 8 unit test 40 end 
 [[2], [7]] 
 [[2], [5]] 
@@ -306,13 +306,13 @@ GET:
 
 DESCRIPTION intracranial GET uuid FOLLOWEDBY (obesity FOLLOWEDBY TEST ferritin GET uuid) OR FOLLOWEDBY endadmission ENDSEARCH
 GET: 
-[[[2]], []]
-[[[2]], [[[7]]]]
-[[[2]], [[[7]]], []]
-[[[3]], []]
-[[[3]], [[[7]]]]
-[[[3]], [[[7]]], []]
-[[[9]], []]
+[[0, [2]], []]
+[[0, [2]], [[3, [7]]]]
+[[0, [2]], [[3, [7]]], []]
+[[0, [3]], []]
+[[0, [3]], [[3, [7]]]]
+[[0, [3]], [[3, [7]]], []]
+[[0, [9]], []]
 7 unit test 41 end 
 [[2], [11]] 
 [[2], [5], [7]] 
@@ -325,10 +325,10 @@ GET:
 
 (DESCRIPTION intracranial GET uuid) AND DESCRIPTION obesity STARTTIME ASPREVIOUS AFTER STARTTIME ENDSEARCH
 GET: 
-[[[[2]]], []]
-[[[[2]]], []]
-[[[[3]]], []]
-[[[[3]]], []]
+[[[1, [2]]], []]
+[[[1, [2]]], []]
+[[[1, [3]]], []]
+[[[1, [3]]], []]
 4 unit test 42 end 
 [[2], [5]] 
 [[2], [8]] 
@@ -339,14 +339,14 @@ GET:
 (DESCRIPTION intracranial GET uuid) OR AND DESCRIPTION startadmission ENDSEARCH
 GET: 
 [[]]
-[[[[2]]]]
-[[[[2]]], []]
-[[[[3]]]]
-[[[[3]]], []]
-[[[[9]]]]
-[[[[9]]], []]
-[[[[12]]]]
-[[[[12]]], []]
+[[[1, [2]]]]
+[[[1, [2]]], []]
+[[[1, [3]]]]
+[[[1, [3]]], []]
+[[[1, [9]]]]
+[[[1, [9]]], []]
+[[[1, [12]]]]
+[[[1, [12]]], []]
 9 unit test 43 end 
 ['', [1]] 
 [[2]] 
@@ -366,15 +366,15 @@ GET:
 
 (DESCRIPTION intracranial GET uuid) PRECEDEDBY DESCRIPTION endadmission ENDSEARCH
 GET: 
-[[[[12]]], []]
+[[[1, [12]]], []]
 1 unit test 45 end 
 [[12], [11]] 
 
 
 DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN endadmission STRICTLYBETWEEN DESCRIPTION obesity GET uuid ENDSEARCH
 GET: 
-[[[1]], [[11]], [[5]]]
-[[[1]], [[11]], [[8]]]
+[[0, [1]], [1, [11]], [4, [5]]]
+[[0, [1]], [1, [11]], [4, [8]]]
 2 unit test 46 end 
 [[1], [11], [5]] 
 [[1], [11], [8]] 
@@ -382,17 +382,17 @@ GET:
 
 DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN endadmission STRICTLYBETWEEN (DESCRIPTION obesity GET uuid OR AND DESCRIPTION hypertension GET uuid) ENDSEARCH
 GET: 
-[[[1]], [[11]], [[[2]]]]
-[[[1]], [[11]], [[[3]]]]
-[[[1]], [[11]], [[[9]]]]
-[[[1]], [[11]], [[[5]]]]
-[[[1]], [[11]], [[[5]], [[2]]]]
-[[[1]], [[11]], [[[5]], [[3]]]]
-[[[1]], [[11]], [[[5]], [[9]]]]
-[[[1]], [[11]], [[[8]]]]
-[[[1]], [[11]], [[[8]], [[2]]]]
-[[[1]], [[11]], [[[8]], [[3]]]]
-[[[1]], [[11]], [[[8]], [[9]]]]
+[[0, [1]], [1, [11]], [[6, [2]]]]
+[[0, [1]], [1, [11]], [[6, [3]]]]
+[[0, [1]], [1, [11]], [[6, [9]]]]
+[[0, [1]], [1, [11]], [[5, [5]]]]
+[[0, [1]], [1, [11]], [[5, [5]], [6, [2]]]]
+[[0, [1]], [1, [11]], [[5, [5]], [6, [3]]]]
+[[0, [1]], [1, [11]], [[5, [5]], [6, [9]]]]
+[[0, [1]], [1, [11]], [[5, [8]]]]
+[[0, [1]], [1, [11]], [[5, [8]], [6, [2]]]]
+[[0, [1]], [1, [11]], [[5, [8]], [6, [3]]]]
+[[0, [1]], [1, [11]], [[5, [8]], [6, [9]]]]
 11 unit test 47 end 
 [[1], [11], ['', [2]]] 
 [[1], [11], ['', [3]]] 
@@ -422,13 +422,13 @@ GET:
 
 DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (DESCRIPTION obesity GET uuid ONEOF AND DESCRIPTION hypertension GET uuid) ENDSEARCH
 GET: 
-[[[1]], [[11]], [[[2]]]]
-[[[1]], [[11]], [[[3]]]]
-[[[1]], [[11]], [[[9]]]]
-[[[1]], [[11]], [[[5]]]]
-[[[1]], [[11]], [[[8]]]]
-[[[13]], [[16]], [[[15]]]]
-[[[13]], [[16]], [[[14]]]]
+[[0, [1]], [1, [11]], [[6, [2]]]]
+[[0, [1]], [1, [11]], [[6, [3]]]]
+[[0, [1]], [1, [11]], [[6, [9]]]]
+[[0, [1]], [1, [11]], [[5, [5]]]]
+[[0, [1]], [1, [11]], [[5, [8]]]]
+[[0, [13]], [1, [16]], [[6, [15]]]]
+[[0, [13]], [1, [16]], [[5, [14]]]]
 7 unit test 49 end 
 [[1], [11], [2]] 
 [[1], [11], [3]] 
@@ -441,13 +441,13 @@ GET:
 
 DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (DESCRIPTION obesity GET uuid AND DESCRIPTION hypertension GET uuid) ENDSEARCH
 GET: 
-[[[1]], [[11]], [[[5]], [[2]]]]
-[[[1]], [[11]], [[[5]], [[3]]]]
-[[[1]], [[11]], [[[5]], [[9]]]]
-[[[1]], [[11]], [[[8]], [[2]]]]
-[[[1]], [[11]], [[[8]], [[3]]]]
-[[[1]], [[11]], [[[8]], [[9]]]]
-[[[13]], [[16]], [[[14]], [[15]]]]
+[[0, [1]], [1, [11]], [[5, [5]], [6, [2]]]]
+[[0, [1]], [1, [11]], [[5, [5]], [6, [3]]]]
+[[0, [1]], [1, [11]], [[5, [5]], [6, [9]]]]
+[[0, [1]], [1, [11]], [[5, [8]], [6, [2]]]]
+[[0, [1]], [1, [11]], [[5, [8]], [6, [3]]]]
+[[0, [1]], [1, [11]], [[5, [8]], [6, [9]]]]
+[[0, [13]], [1, [16]], [[5, [14]], [6, [15]]]]
 7 unit test 50 end 
 [[1], [11], [5], [2]] 
 [[1], [11], [5], [3]] 
@@ -479,15 +479,15 @@ DESCRIPTION intracranial AND DESCRIPTION obesity STARTTIME ASPREVIOUS BEFORE OFF
 
 
 start chopped list
-2016-01-26 14:00:25.046935
+2016-01-26 14:13:14.148449
 DESCRIPTION hypertension GET uuid ENDSEARCH
 25 unit test 55 end
 chopped list done
-2016-01-26 14:00:25.062559
-time taken: 0:00:00.015624
+2016-01-26 14:13:14.164075
+time taken: 0:00:00.015626
 
 start SAMEADMISSION test
-2016-01-26 14:00:25.062559
+2016-01-26 14:13:14.164075
 (SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
 26 unit test 56 end 
 [[200611130004]] 
@@ -517,10 +517,10 @@ start SAMEADMISSION test
 [[201411060002]] 
 [[201411210003]] 
 
-2016-01-26 14:00:25.093808
-time taken: 0:00:00.031249
+2016-01-26 14:13:14.195323
+time taken: 0:00:00.031248
 
-2016-01-26 14:00:25.093808
+2016-01-26 14:13:14.195323
 DOESNOTEXIST doesnotexist OR (SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
 26 unit test 57 end 
 ['', [200611130004]] 
@@ -550,10 +550,10 @@ DOESNOTEXIST doesnotexist OR (SAMEADMISSION DESCRIPTION hypertension GET uuid) E
 ['', [201411060002]] 
 ['', [201411210003]] 
 
-2016-01-26 14:00:25.125046
-time taken: 0:00:00.031238
+2016-01-26 14:13:14.226574
+time taken: 0:00:00.031251
 
-2016-01-26 14:00:25.125046
+2016-01-26 14:13:14.226574
 (SAMEADMISSION DESCRIPTION infection FOLLOWEDBY isolation) ENDSEARCH
 4 unit test 58 end 
 [[200903110009], [200903110018]] 
@@ -561,8 +561,8 @@ time taken: 0:00:00.031238
 [[201205010009], [201205010013]] 
 [[201411210002], [201411210005]] 
 
-2016-01-26 14:00:25.140671
-time taken: 0:00:00.015625
+2016-01-26 14:13:14.257823
+time taken: 0:00:00.031249
 
 DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (TYPE diagnosis GET description AND TYPE pathology TEST Sodium RESULT NUMERIC GREATERTHANEQUALS 0.000000 RESULT NUMERIC LESSTHANEQUALS 120.000000 GET result) ENDSEARCH
 2 unit test 59 end 

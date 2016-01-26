@@ -319,7 +319,11 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
             nextgetquery = []
             if len(gets[eventfoundquerydepth]) > 0:
                 buildgetquery = []
+                getnumber = False
                 for getquery in gets[eventfoundquerydepth]:
+                    if not getnumber:
+                        getnumber = True
+                        buildgetquery.append(eventfoundquerydepth)
                     getkey = getquery[1]
                     if getkey not in addevent:
                         buildgetquery.append(None)
@@ -661,7 +665,11 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     if len(gets[eventfoundquerydepth + 1]) > 0:         #if there are GETs, get them
                         for event in extracted:                                 #collect all events' gets and make one array for ANYNUMBEROF
                             nextget = []
+                            getnumber = False
                             for getkey in gets[eventfoundquerydepth + 1]:
+                                if not getnumber:
+                                    getnumber = True
+                                    nextget.append(eventfoundquerydepth + 1)
                                 if getkey[1] in event:
                                     nextget.append(event[getkey[1]])
                                 else:
@@ -690,7 +698,11 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         nextgetquery = copy.deepcopy(currentgetsquery)
                         if len(gets[eventfoundquerydepth + 1]) > 0:         #if there are GETs, get them
                             nextget = []
+                            getnumber = False
                             for getkey in gets[eventfoundquerydepth + 1]:
+                                if not getnumber:
+                                    getnumber = True
+                                    nextget.append(eventfoundquerydepth + 1)
                                 if getkey[1] in event:
                                     nextget.append(event[getkey[1]])
                                 else:
@@ -768,7 +780,11 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         if len(gets[eventfoundquerydepth + 1]) > 0:         #if there are GETs, get them
                             for event in extracted:                                 #collect all events' gets and make one array for ANYNUMBEROF
                                 nextget = []
+                                getnumber = False
                                 for getkey in gets[eventfoundquerydepth + 1]:
+                                    if not getnumber:
+                                        getnumber = True
+                                        nextget.append(eventfoundquerydepth + 1)
                                     if getkey[1] in event:
                                         nextget.append(event[getkey[1]])
                                     else:
@@ -797,7 +813,11 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                             nextgetquery = copy.deepcopy(currentgetsquery)
                             if len(gets[eventfoundquerydepth + 1]) > 0:         #if there are GETs, get them
                                 nextget = []
+                                getnumber = False
                                 for getkey in gets[eventfoundquerydepth + 1]:
+                                    if not getnumber:
+                                        getnumber = True
+                                        nextget.append(eventfoundquerydepth + 1)
                                     if getkey[1] in event:
                                         nextget.append(event[getkey[1]])
                                     else:
