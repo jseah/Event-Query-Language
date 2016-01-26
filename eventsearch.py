@@ -277,7 +277,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     allkeysmatch = False                     #ALL the events in a single eventfound list must match the constraints or this eventfound fails
                     break
                 #done, reaching here = this eventfound matches this keyconstraint, got to next keyconstraint
-            if allkeysmatch:
+            if allkeysmatch: 
                 extracted.append(e)
                 getbracketreturnflag = True             #disables writing to the GET stack for later portions because it's done here; except for OR propagation
                 nextgetquery = []
@@ -290,6 +290,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
         elif 'NOT' in connectors[eventfoundquerydepth]:
             ornotflag = True
         elif 'ONEOF' in connectors[eventfoundquerydepth]:
+            ornotflag = True
+        elif 'OPTIONAL' in connectors[eventfoundquerydepth]:
             ornotflag = True
         else:
             return [], querynumber, []
@@ -631,7 +633,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         break
                     #print("all keys match")
                     #done, reaching here = this eventfound matches this key
-                if allkeysmatch:
+                if allkeysmatch or 'OPTIONAL' in connectors[eventfoundquerydepth]:
                     extracted.append(e)
                     getbracketreturnflag = True             #disables writing to the GET stack for later portions because it's done here; except for OR propagation
                     nextgetquery = copy.deepcopy(currentgetsquery)
@@ -680,7 +682,50 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     nextgetquerylist.append(nextgetquery)
                 if getbracketreturnflag:
                     nextgetquerylist.extend(bracketnextgetquery)
-            else:                                                     #default
+            elif 'OPTIONAL' in connectors[eventfoundquerydepth + 1]:
+                if len(extracted) == 0 and not getbracketreturnflag:                         #found nothing, copy currenteventfound as next eventfoundlist of size 1
+                    nexteventfoundlist = []
+                    nexteventfound = copy.deepcopy(currenteventfound)
+                    nexteventfoundlist.append(nexteventfound)
+                    #eventfoundquerylist[eventfoundquerydepth + 1] = nexteventfoundlist
+                    eventfoundquerylist[nextdepth] = nexteventfoundlist
+                    nextgetquery = copy.deepcopy(currentgetsquery)
+                    nextgetquerylist.append(nextgetquery)
+                    getsquerylist[nextdepth] = nextgetquerylist
+                    orstate[nextdepth].append(False)                #a OPTIONAL found nothing
+                for event in extracted:
+                    orstate[nextdepth].append(False)                   #if this connector is not OR, always set to false
+                    nexteventfound = copy.deepcopy(currenteventfound)
+                    for k in event:
+                        v = event[k]
+                        if k in currenteventfound:
+                            nexteventfound[k].append(v)                 #brackets get handled as list objects
+                        else:
+                            nexteventfound[k] = []
+                            for i in range(0, getreturncountatdepth(queries, connectors, eventfoundquerydepth)):        #keys not previously present get filled with empty strings up until the current query number
+                                nexteventfound[k].append('')
+                            nexteventfound[k].append(v)
+                    nexteventfoundlist.append(nexteventfound)
+                    if not getbracketreturnflag:                            #blocks double writing from bracket returns
+                        nextgetquery = copy.deepcopy(currentgetsquery)
+                        if len(gets[eventfoundquerydepth + 1]) > 0:         #if there are GETs, get them
+                            nextget = []
+                            getnumber = False
+                            for getkey in gets[eventfoundquerydepth + 1]:
+                                if not getnumber:
+                                    getnumber = True
+                                    nextget.append(eventfoundquerydepth + 1)
+                                if getkey[1] in event:
+                                    nextget.append(event[getkey[1]])
+                                else:
+                                    nextget.append(None)
+                            nextgetquery.append(nextget)
+                        else:
+                            nextgetquery.append([])
+                        nextgetquerylist.append(nextgetquery)
+                if getbracketreturnflag:
+                    nextgetquerylist.extend(bracketnextgetquery)
+            else:               #default
                 for event in extracted:
                     orstate[nextdepth].append(False)                   #if this connector is not OR, always set to false
                     nexteventfound = copy.deepcopy(currenteventfound)
@@ -730,7 +775,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
             else:                                           #found something, so fail it
                 nextgetquerylist = []                       #empty out the getlist and propagate
                 getsquerylist[nextdepth] = nextgetquerylist
-        if connectors[eventfoundquerydepth + 1][0] == 'ENDOR' or 'OR' in connectors[nextdepth] or 'ONEOF' in connectors[nextdepth]:
+        if (connectors[eventfoundquerydepth + 1][0] == 'ENDOR' or 'OR' in connectors[nextdepth] or 'ONEOF' in connectors[nextdepth]):
             #OR connectors pass even if nothing returns; they add to the returns if something is found
             #ENDOR connectors pass only if either they or the previous OR added something; they add to the returns if something is founds; ENDOR is always found in the first slot
             #ONEOF connectors will append eventfounds if orstate is false, appends only empty otherwise
@@ -841,7 +886,7 @@ def translate(userquery):
     '''
     #constants
     connectorwords = ["AND", "FOLLOWEDBY", "STRICTLYFOLLOWEDBY", "PRECEDEDBY", "STRICTLYPRECEDEDBY", "BETWEEN", "STRICTLYBETWEEN", "ENDSEARCH"]
-    searchwords = ["NOT", "ANYNUMBEROF", "OR", "ONEOF"]
+    searchwords = ["NOT", "ANYNUMBEROF", "OR", "ONEOF", "OPTIONAL"]
     brackets = ["(", ")"]
     
     #initial parser
@@ -965,6 +1010,8 @@ def translate(userquery):
             buildconnector.append('AND')
         if "ANYNUMBEROF" in connector:
             buildconnector.append('ANYNUMBEROF')
+        if "OPTIONAL" in connector:
+            buildconnector.append('OPTIONAL')
         connectors.append(buildconnector)
         if "FOLLOWEDBY" in connector and "NOT" in connector:
             query.append(['starttime', ['EVENT', 'starttime', -1, ["earliest"]], ['<=']])           #not after earliest time in previous return if []; interpreted strictly for the rest
@@ -1071,6 +1118,20 @@ def translate(userquery):
                     bracketcount = bracketcount - 1
                     if bracketcount == 0:
                         connectors[currentindex][0] = 'ENDOR'
+                        break
+                currentindex = currentindex + 1
+        #Propagate OPTIONAL flag for ( to the corresponding ); this allows OPTIONAL ( to work    
+        if query[0][0] == '(' and 'OPTIONAL' in connectors[i]:
+            currentindex = i + 1
+            bracketcount = 1
+            while True:
+                query2 = querylist[currentindex]
+                if query2[0][0] == '(':
+                    bracketcount = bracketcount + 1
+                if query2[0][0] == ')':
+                    bracketcount = bracketcount - 1
+                    if bracketcount == 0:
+                        connectors[currentindex][0] = 'OPTIONAL'
                         break
                 currentindex = currentindex + 1
     
@@ -2041,7 +2102,49 @@ if __name__ == '__main__':
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
     log(str(len(test2[0])) + " unit test 70 end " + printuuid(test2[0]))
-    #assert len(test2[0]) == 2
+    assert len(test2[0]) == 11
     print(test2[2])
     log("")
     
+    instr = "intracranial OPTIONAL AND doesnotexist ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 71 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 5
+    print(test2[2])
+    log("")
+    
+    instr = "intracranial OPTIONAL ( doesnotexist ) ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 72 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 5
+    print(test2[2])
+    log("")
+    
+    instr = "OPTIONAL ( doesnotexist ) AND intracranial ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 73 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 5
+    print(test2[2])
+    log("")
+    
+    eventList = [{'uuid':[1], 'endtime': datetime(2010, 5, 26, 10, 0), 'type': 'admin ', 'description': 'startadmission ', 'starttime': datetime(2010, 5, 26, 10, 0), 'number': 1},
+    {'uuid':[2], 'code': u'E66.9 ', 'endtime': datetime(2013, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'obesity, unspecified ', 'starttime': datetime(2013, 5, 28, 19, 9), 'number': 4}, 
+    {'uuid':[3], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 20, 9), 'number': 2},   #same time as 2
+    {'uuid':[4], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 21, 9), 'number': 3},   #1 day later
+    {'uuid':[5], 'code': u'Z86.43 ', 'endtime': datetime(2014, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'personal history of tobacco use disorder ', 'starttime': datetime(2014, 5, 28, 22, 9), 'number': 5}, 
+    ]
+    
+    instr = "startadmission OPTIONAL AND intracranial ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 74 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 2
+    print(test2[2])
+    log("")
