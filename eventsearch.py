@@ -99,61 +99,81 @@ def valuematcheskey(value, key, constraint, flags):
     for flag in flags:
         if not(flag == 'NOT') and not(flag == 'ANY'):
             prunedflags.append(flag)
+    flagused = False
     if isinstance(constraint, str):         #is a string
         constraint = constraint.lower()
         value = value.lower()
         if len(prunedflags) == 0:
             if constraint not in value:
                 constraintmatch = False
+            flagused = True
         for flag in flags:
             if flag == 'substring':
                 if constraint not in value:
                     constraintmatch = False
+                flagused = True
             if flag == 'exact':
                 if not constraint == value:
                     constraintmatch = False
+                flagused = True
     elif isinstance(constraint, datetime):  #is a date
         #print(constraint, value, flags)
         if len(prunedflags) == 0:
             if not constraint == value:
                 constraintmatch = False
+            flagused = True
         for flag in flags:
             if flag == '>=':
                 if not constraint >= value:
                     constraintmatch = False
+                flagused = True
             if flag == '<=':
                 if not constraint <= value:
                     constraintmatch = False
+                flagused = True
             if flag == '>':
                 if not constraint > value:
                     constraintmatch = False
+                flagused = True
             if flag == '<':
                 if not constraint < value:
                     constraintmatch = False
+                flagused = True
             if flag == '==':
                 if not constraint == value:
                     constraintmatch = False
+                flagused = True
     elif isinstance(constraint, int) or isinstance(constraint, float):      #numeric comparison      
         if len(prunedflags) == 0:
             if not(constraint == value):
                 constraintmatch = False
+            flagused = True
         for flag in flags:
             if flag == '>=':
                 if not value >= constraint:
                     constraintmatch = False
+                flagused = True
             if flag == '<=':
                 if not value <= constraint:
                     constraintmatch = False
+                flagused = True
             if flag == '>':
                 if not value > constraint:
                     constraintmatch = False
+                flagused = True
             if flag == '<':
                 if not value < constraint:
                     constraintmatch = False
+                flagused = True
             if flag == '==':
                 if not value == constraint:
                     constraintmatch = False
+                flagused = True
     else:                                                   #unknown datatype, use generic exact match
+        if not(constraint == value):
+            constraintmatch = False
+        flagused = True
+    if not flagused:
         if not(constraint == value):
             constraintmatch = False
     return constraintmatch
@@ -587,6 +607,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
         if not(query[0][0] == "("):                 #1st key is not a '(', not a bracket
             extracted = extract(eventList, buildquery)
             nextdepth = eventfoundquerydepth + 1
+            if debug2: log([e["uuid"] for e in extracted])
         else:                                       #'(' bracket start, recurse, collect result and parse result using remaining keyconstraints
             extracted = []
             if not "SAMEADMISSION" in connectors[eventfoundquerydepth + 1]:
@@ -603,7 +624,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         getfounds.append(g)
             for eventcount in range(0, len(eventfounds)):
                 e = eventfounds[eventcount]
-                #if debug2: print(e)
+                
                 allkeysmatch = True
                 for keyconstraint in buildquery:
                     key = keyconstraint[0]
@@ -982,7 +1003,8 @@ def translate(userquery):
         i = i + 1
     
     if debug:
-        print(userquerylist, connectorlist)
+        log(userquerylist)
+        log(connectorlist)
     
     #translator
     #turns each userquerylist into a searchterm usable by evaluator
@@ -1150,10 +1172,10 @@ def translate(userquery):
         gets.append(getstatements)
     
     if debug:       #DEBUG
-        print("query list:")
+        log("query list:")
         for i in range(0, len(querylist)):
             try:
-                pprint.pprint([querylist[i], connectors[i], gets[i]])
+                log([querylist[i], connectors[i], gets[i]])
             except:
                 pass
     return querylist, connectors, gets
@@ -2148,3 +2170,4 @@ if __name__ == '__main__':
     assert len(test2[0]) == 2
     print(test2[2])
     log("")
+    
