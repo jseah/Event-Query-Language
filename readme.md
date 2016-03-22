@@ -9,7 +9,9 @@ Event Query Language implements this by allowing relative search terms between e
 Such linked events are returned as entire sequences that fulfill the search criteria.  
 
 Eventlist:
-``` [{EventID: 1, Description: cat, starttime: 12am, count: 5},
+
+```
+[{EventID: 1, Description: cat, starttime: 12am, count: 5},
 {EventID: 2, Description: cat, starttime: 3pm, count: 1},
 {EventID: 3, Description: dog, starttime: 9am, count: 5},
 {EventID: 4, Description: dog, starttime: 6pm, count: 1}]
@@ -30,7 +32,8 @@ output.py is required for the testing script only
 ## Examples
 To use Event Query Language, you must format your events as a dictionary:
 
-``` {Descriptor: Value, Descriptor: Value}
+```
+{Descriptor: Value, Descriptor: Value}
 ```
 Dates must be stored as python's datetime.datetime format.  String values are not case sensitive. 
 
@@ -45,25 +48,29 @@ Translate and Evaluate operate independently.
 Translate separates words by spacebar and uses ALLCAPS to find keywords, underscores are turned into spacebars after the words have been split.  Here are a few examples of a string that Translate parses:
 
 This searchstring finds all possible combinations of events with description "intracranial hypertension" and events with a description "endadmission".  ALLCAPS keywords that are not reserved by Translate are used to find a descriptor in your events.  
-``` DESCRIPTION intracranial_hypertension 
+```
+DESCRIPTION intracranial_hypertension 
 AND DESCRIPTION endadmission 
 ENDSEARCH
 ```
 
 Relationships between events use the ASPREVIOUS keyword, this refers to the event directly previous to this event by default (the same as ASPREVIOUS-1). 
-``` DESCRIPTION intracranial 
+```
+DESCRIPTION intracranial 
 NOT AND DESCRIPTION intracranial 
     COUNT ASPREVIOUS GREATERTHAN COUNT 
 ENDSEARCH
 ```
 
 Special followedby and precededby keywords allow easy linking using a starttime descriptor; without having to explicitly write out the relationships. 
-``` DESCRIPTION intracranial 
+```
+DESCRIPTION intracranial 
 FOLLOWEDBY DESCRIPTION obesity  
 ENDSEARCH
 ```
 Compared with:
-``` DESCRIPTION intracranial 
+```
+DESCRIPTION intracranial 
 AND DESCRIPTION obesity  
     STARTTIME ASPREVIOUS AFTER STARTTIME 
     NOT UUID ASPREVIOUS UUID 
@@ -71,7 +78,8 @@ ENDSEARCH
 ```
 
 Searches can be nested inside brackets, criteria applied to the bracket will apply to all events returned from inside the bracket. 
-``` DESCRIPTION intracranial
+```
+DESCRIPTION intracranial
 FOLLOWEDBY (
     DESCRIPTION obesity 
     FOLLOWEDBY TEST ferritin
