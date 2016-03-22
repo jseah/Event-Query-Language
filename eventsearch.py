@@ -913,6 +913,7 @@ def translate(userquery):
     #initial parser
     #chops user input into words and searchterms / connectors for later translation
     #print(userquery)
+    userquery.replace('\n', '')
     words = userquery.split()
     for i in range(0, len(words)):
         words[i] = words[i].replace('_', ' ')
@@ -2171,3 +2172,22 @@ if __name__ == '__main__':
     print(test2[2])
     log("")
     
+    eventList = [{u'admid': u'', u'admReason': u'', u'description': u'startadmission ', u'starttime': datetime(1900, 1, 1, 0, 0), u'unitid': u'', u'pmiid': u'ALF6239537', u'endtime': datetime(1900, 1, 1, 0, 0), u'type': u'admin ', u'unit': u'', u'uuid': [1]}, 
+    {u'admid': u'', u'admReason': u'', u'description': u'endadmission ', u'starttime': datetime(1900, 1, 2, 0, 0), u'unitid': u'', u'pmiid': u'ALF6239537', u'endtime': datetime(1900, 1, 2, 0, 0), u'type': u'admin ', u'unit': u'', u'uuid': [2]}, 
+    {u'uid': 0, u'gcsqualifier': u'Legitimate', u'respirationratequalifier': 4066772.0, u'gcsmotor': u'6', u'fractionofinspiredoxygen': 50.0, u'fast': u'Equivocal', u'uuid': [3], u'respiratoryrate': 18.0, u'systolichighvalue': 130.0, u'systoliclowvalue': 98.0, u'heartratelowvalue': 85.0, u'ambgcs': 15.0, u'diastolicbloodpressure': 98.0, u'gcs': 11.0, u'pmiid': u'ALF6239537', u'type': u'trauma ', u'description': u'presentation', u'oxygensaturation': 99.0, u'gcseye': u'3', u'pulserate': 100.0, u'gcsverbal': u'2', u'temperature': 36.9, u'systolicbloodpressure': 130.0, u'edgcs': 11.0, u'heartratehighvalue': 98.0, u'iss': 9.0, u'age': 45.0, u'iss12': 0.0, u'pupil': u'Pupils equal and reacting to light', u'starttime': datetime(2015, 10, 31, 4, 34), u'niss': 13.0, u'vstorm': 1.0}, 
+    {u'aisseverity': 2.0, u'uuid': [4], u'pmiid': u'ALF6239537', u'text': u'L Pneumothorax', u'bodyregion': u'Chest', u'description': u'injury', u'ais': u'4422022                  ', u'aisstructure': u'22', u'aistype': u'4', u'starttime': datetime(2015, 10, 31, 4, 34), u'aisregionindex': u'4', u'uid': 1, u'type': u'trauma ', u'aislevel': u'02'}, 
+    {u'aisseverity': 3.0, u'uuid': [5], u'pmiid': u'ALF6239537', u'text': u'small volume 11mm haemopericardium', u'bodyregion': u'Chest', u'description': u'injury', u'ais': u'4416033                  ', u'aisstructure': u'16', u'aistype': u'4', u'starttime': datetime(2015, 10, 31, 4, 34), u'aisregionindex': u'4', u'uid': 2, u'type': u'trauma ', u'aislevel': u'03'}, 
+    {u'aisseverity': 2.0, u'uuid': [6], u'pmiid': u'ALF6239537', u'text': u'R buttock (gluteal) laceration', u'bodyregion': u'External', u'description': u'injury', u'ais': u'8106042                  ', u'aisstructure': u'06', u'aistype': u'1', u'starttime': datetime(2015, 12, 14, 20, 49), u'aisregionindex': u'8', u'uid': 3, u'type': u'trauma ', u'aislevel': u'04'}, 
+    {u'aisseverity': 4.0, u'uuid': [7], u'pmiid': u'ALF6239537', u'text': u'15mm laceration to the brachiocephalic vein + blood loss (PEA arrest)', u'bodyregion': u'Chest', u'description': u'injury', u'ais': u'4206064                  ', u'aisstructure': u'06', u'aistype': u'2', u'starttime': datetime(2015, 12, 14, 20, 49), u'aisregionindex': u'4', u'uid': 4, u'type': u'trauma ', u'aislevel': u'06'}, 
+    {u'description': u'death ', u'cause': u'Complications of injury', u'uuid': [8], u'pmiid': u'ALF6239537', u'starttime': datetime(2015, 12, 15, 23, 59), u'coronernumber': u'6322/15', u'type': u'trauma ', u'sentinel': u'1b - Cardiac/resp arrest before arrival', u'uid': 5}]
+    
+    debug = True
+    debug2 = True
+    instr = "TYPE trauma DESCRIPTION presentation NOT FOLLOWEDBY TYPE trauma DESCRIPTION presentation OPTIONAL FOLLOWEDBY (TYPE trauma DESCRIPTION injury AISREGIONINDEX 4 NOT AND TYPE trauma DESCRIPTION injury AISREGIONINDEX ASPREVIOUS AISREGIONINDEX AISSEVERITY ASPREVIOUS GREATERTHAN AISSEVERITY STARTTIME ASPREVIOUS BEFORE OFFSETT+1 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT-1 STARTTIME NOT AND TYPE trauma DESCRIPTION injury AISREGIONINDEX ASPREVIOUS AISREGIONINDEX AISSEVERITY ASPREVIOUS EQUALS AISSEVERITY UID ASPREVIOUS GREATERTHAN UID STARTTIME ASPREVIOUS BEFORE OFFSETT+1 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT-1 STARTTIME) FOLLOWEDBY TYPE trauma DESCRIPTION death ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 74 end " + printuuid(test2[0]))
+    #assert len(test2[0]) == 2
+    print(test2[2])
+    log("")
