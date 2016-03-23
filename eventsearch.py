@@ -914,7 +914,11 @@ def translate(userquery):
     #chops user input into words and searchterms / connectors for later translation
     #print(userquery)
     userquery.replace('\n', '')
-    words = userquery.split()
+    chopquery = userquery.split()
+    words = []
+    for w in chopquery:
+        if len(w) != 0:
+            words.append(w)
     for i in range(0, len(words)):
         words[i] = words[i].replace('_', ' ')
     userquerylist = []
