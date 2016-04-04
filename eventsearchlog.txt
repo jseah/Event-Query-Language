@@ -479,15 +479,15 @@ DESCRIPTION intracranial AND DESCRIPTION obesity STARTTIME ASPREVIOUS BEFORE OFF
 
 
 start chopped list
-2016-03-23 21:32:08.542713
+2016-04-04 21:48:01.621806
 DESCRIPTION hypertension GET uuid ENDSEARCH
 25 unit test 55 end
 chopped list done
-2016-03-23 21:32:08.558340
+2016-04-04 21:48:01.637433
 time taken: 0:00:00.015627
 
 start SAMEADMISSION test
-2016-03-23 21:32:08.558340
+2016-04-04 21:48:01.637433
 (SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
 26 unit test 56 end 
 [[200611130004]] 
@@ -517,10 +517,10 @@ start SAMEADMISSION test
 [[201411060002]] 
 [[201411210003]] 
 
-2016-03-23 21:32:08.589574
-time taken: 0:00:00.031234
+2016-04-04 21:48:01.684305
+time taken: 0:00:00.046872
 
-2016-03-23 21:32:08.589574
+2016-04-04 21:48:01.684305
 DOESNOTEXIST doesnotexist OR (SAMEADMISSION DESCRIPTION hypertension GET uuid) ENDSEARCH
 26 unit test 57 end 
 ['', [200611130004]] 
@@ -550,10 +550,10 @@ DOESNOTEXIST doesnotexist OR (SAMEADMISSION DESCRIPTION hypertension GET uuid) E
 ['', [201411060002]] 
 ['', [201411210003]] 
 
-2016-03-23 21:32:08.620841
-time taken: 0:00:00.031267
+2016-04-04 21:48:01.731182
+time taken: 0:00:00.046877
 
-2016-03-23 21:32:08.636451
+2016-04-04 21:48:01.731182
 (SAMEADMISSION DESCRIPTION infection FOLLOWEDBY isolation) ENDSEARCH
 4 unit test 58 end 
 [[200903110009], [200903110018]] 
@@ -561,8 +561,8 @@ time taken: 0:00:00.031267
 [[201205010009], [201205010013]] 
 [[201411210002], [201411210005]] 
 
-2016-03-23 21:32:08.652086
-time taken: 0:00:00.015635
+2016-04-04 21:48:01.778059
+time taken: 0:00:00.046877
 
 DESCRIPTION startadmission GET uuid FOLLOWEDBY DESCRIPTION endadmission GET uuid NOT STRICTLYBETWEEN DESCRIPTION startadmission NOT STRICTLYBETWEEN DESCRIPTION endadmission STRICTLYBETWEEN (TYPE diagnosis GET description AND TYPE pathology TEST Sodium RESULT NUMERIC GREATERTHANEQUALS 0.000000 RESULT NUMERIC LESSTHANEQUALS 120.000000 GET result) ENDSEARCH
 2 unit test 59 end 
@@ -692,307 +692,23 @@ OPTIONAL ( doesnotexist ) AND intracranial ENDSEARCH
 
 startadmission OPTIONAL AND intracranial ENDSEARCH
 2 unit test 74 end 
+[[1], [4]] 
 [[1], [3]] 
+
+
+FIRSTUNIQUE TEST
+intracranial GET number ENDSEARCH
+1 unit test 75 end 
+[[4]] 
+
+
+startadmission FIRSTUNIQUE AND intracranial GET number ENDSEARCH
+1 unit test 77 end 
 [[1], [4]] 
 
 
-[['TYPE', 'trauma', 'DESCRIPTION', 'presentation'], ['TYPE', 'trauma', 'DESCRIPTION', 'presentation'], ['('], ['TYPE', 'trauma', 'DESCRIPTION', 'injury', 'AISREGIONINDEX', '4'], ['TYPE', 'trauma', 'DESCRIPTION', 'injury', 'AISREGIONINDEX', 'ASPREVIOUS', 'AISREGIONINDEX', 'AISSEVERITY', 'ASPREVIOUS', 'GREATERTHAN', 'AISSEVERITY', 'STARTTIME', 'ASPREVIOUS', 'BEFORE', 'OFFSETT+1', 'STARTTIME', 'STARTTIME', 'ASPREVIOUS', 'AFTER', 'OFFSETT-1', 'STARTTIME'], ['TYPE', 'trauma', 'DESCRIPTION', 'injury', 'AISREGIONINDEX', 'ASPREVIOUS', 'AISREGIONINDEX', 'AISSEVERITY', 'ASPREVIOUS', 'EQUALS', 'AISSEVERITY', 'UID', 'ASPREVIOUS', 'GREATERTHAN', 'UID', 'STARTTIME', 'ASPREVIOUS', 'BEFORE', 'OFFSETT+1', 'STARTTIME', 'STARTTIME', 'ASPREVIOUS', 'AFTER', 'OFFSETT-1', 'STARTTIME'], [')'], ['TYPE', 'trauma', 'DESCRIPTION', 'death']]
-['NOT FOLLOWEDBY', 'OPTIONAL FOLLOWEDBY', '(', 'NOT AND', 'NOT AND', ')', 'FOLLOWEDBY', 'ENDSEARCH']
-query list:
-[[['type', 'trauma', []], ['description', 'presentation', []]], ['AND'], []]
-[[['type', 'trauma', []], ['description', 'presentation', []], ['starttime', ['EVENT', 'starttime', -1, ['earliest']], ['<=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]], ['NOT'], []]
-[[['(', '', []], ['starttime', ['EVENT', 'starttime', -1, ['latest']], ['<=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]], ['AND', 'OPTIONAL'], []]
-[[['type', 'trauma', []], ['description', 'injury', []], ['aisregionindex', '4', []]], ['AND'], []]
-[[['type', 'trauma', []], ['description', 'injury', []], ['aisregionindex', ['EVENT', 'aisregionindex', -1, []], []], ['aisseverity', ['EVENT', 'aisseverity', -1, []], ['>']], ['starttime', ['EVENT', 'starttime', -1, [['OFFSET', 'T', '+', '1']]], ['>=']], ['starttime', ['EVENT', 'starttime', -1, [['OFFSET', 'T', '-', '1']]], ['<=']]], ['NOT'], []]
-[[['type', 'trauma', []], ['description', 'injury', []], ['aisregionindex', ['EVENT', 'aisregionindex', -1, []], []], ['aisseverity', ['EVENT', 'aisseverity', -1, []], ['==']], ['uid', ['EVENT', 'uid', -1, []], ['>']], ['starttime', ['EVENT', 'starttime', -1, [['OFFSET', 'T', '+', '1']]], ['>=']], ['starttime', ['EVENT', 'starttime', -1, [['OFFSET', 'T', '-', '1']]], ['<=']]], ['NOT'], []]
-[[[')', '', []]], ['OPTIONAL'], []]
-[[['type', 'trauma', []], ['description', 'death', []], ['starttime', ['EVENT', 'starttime', -1, ['latest']], ['<=']], ['uuid', ['EVENT', 'uuid', -1, ['any']], ['NOT']]], ['AND'], []]
-
-start: 0 ; max: 8 ; found: 0 ; getsfound: 0 ; ornotflag: False
-query number: 0; list of events remaining: 
-[[3]] 
-; getcount: 1  <--
-query number: 1; list of events remaining: 
-; getcount: 0
-query number: 2; list of events remaining: 
-; getcount: 0
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-query number: 6; list of events remaining: 
-; getcount: 0
-query number: 7; list of events remaining: 
-; getcount: 0
-
-[]
-start: 0 ; max: 8 ; found: 0 ; getsfound: 0 ; ornotflag: False
-query number: 0; list of events remaining: 
-; getcount: 0
-query number: 1; list of events remaining: 
-[[3]] 
-; getcount: 1  <--
-query number: 2; list of events remaining: 
-; getcount: 0
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-query number: 6; list of events remaining: 
-; getcount: 0
-query number: 7; list of events remaining: 
-; getcount: 0
-
-
-start: 3 ; max: 6 ; found: 0 ; getsfound: 0 ; ornotflag: False
-query number: 3; list of events remaining: 
-[[4]] 
-[[5]] 
-[[7]] 
-; getcount: 3  <--
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-
-[[5]]
-start: 3 ; max: 6 ; found: 0 ; getsfound: 0 ; ornotflag: False
-query number: 3; list of events remaining: 
-[[5]] 
-[[7]] 
-; getcount: 2
-query number: 4; list of events remaining: 
-; getcount: 0  <--
-query number: 5; list of events remaining: 
-; getcount: 0
-
-start: 3 ; max: 6 ; found: 0 ; getsfound: 0 ; ornotflag: False
-query number: 3; list of events remaining: 
-[[5]] 
-[[7]] 
-; getcount: 2  <--
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-
-[]
-start: 3 ; max: 6 ; found: 0 ; getsfound: 0 ; ornotflag: False
-query number: 3; list of events remaining: 
-[[7]] 
-; getcount: 1
-query number: 4; list of events remaining: 
-[[5]] 
-; getcount: 1  <--
-query number: 5; list of events remaining: 
-; getcount: 0
-
-[]
-start: 3 ; max: 6 ; found: 0 ; getsfound: 0 ; ornotflag: False
-query number: 3; list of events remaining: 
-[[7]] 
-; getcount: 1
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-[[5]] 
-; getcount: 1  <--
-
-start: 3 ; max: 6 ; found: 1 ; getsfound: 1 ; ornotflag: False
-query number: 3; list of events remaining: 
-[[7]] 
-; getcount: 1
-query number: 4; list of events remaining: 
-; getcount: 0  <--
-query number: 5; list of events remaining: 
-; getcount: 0
-
-start: 3 ; max: 6 ; found: 1 ; getsfound: 1 ; ornotflag: False
-query number: 3; list of events remaining: 
-[[7]] 
-; getcount: 1  <--
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-
-[]
-start: 3 ; max: 6 ; found: 1 ; getsfound: 1 ; ornotflag: False
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-[[7]] 
-; getcount: 1  <--
-query number: 5; list of events remaining: 
-; getcount: 0
-
-[]
-start: 3 ; max: 6 ; found: 1 ; getsfound: 1 ; ornotflag: False
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-[[7]] 
-; getcount: 1  <--
-
-start: 3 ; max: 6 ; found: 2 ; getsfound: 2 ; ornotflag: False
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0  <--
-query number: 5; list of events remaining: 
-; getcount: 0
-
-start: 3 ; max: 6 ; found: 2 ; getsfound: 2 ; ornotflag: False
-query number: 3; list of events remaining: 
-; getcount: 0  <--
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-
-start: 0 ; max: 8 ; found: 0 ; getsfound: 0 ; ornotflag: False
-query number: 0; list of events remaining: 
-; getcount: 0
-query number: 1; list of events remaining: 
-; getcount: 0
-query number: 2; list of events remaining: 
-; getcount: 0
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-query number: 6; list of events remaining: 
-[[3], [[5]]] 
-[[3], [[7]]] 
-; getcount: 2  <--
-query number: 7; list of events remaining: 
-; getcount: 0
-
-[[8]]
-start: 0 ; max: 8 ; found: 0 ; getsfound: 0 ; ornotflag: False
-query number: 0; list of events remaining: 
-; getcount: 0
-query number: 1; list of events remaining: 
-; getcount: 0
-query number: 2; list of events remaining: 
-; getcount: 0
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-query number: 6; list of events remaining: 
-[[3], [[7]]] 
-; getcount: 1
-query number: 7; list of events remaining: 
-[[3], [[5]], [8]] 
-; getcount: 1  <--
-
-start: 0 ; max: 8 ; found: 1 ; getsfound: 1 ; ornotflag: False
-query number: 0; list of events remaining: 
-; getcount: 0
-query number: 1; list of events remaining: 
-; getcount: 0
-query number: 2; list of events remaining: 
-; getcount: 0
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-query number: 6; list of events remaining: 
-[[3], [[7]]] 
-; getcount: 1  <--
-query number: 7; list of events remaining: 
-; getcount: 0
-
-[[8]]
-start: 0 ; max: 8 ; found: 1 ; getsfound: 1 ; ornotflag: False
-query number: 0; list of events remaining: 
-; getcount: 0
-query number: 1; list of events remaining: 
-; getcount: 0
-query number: 2; list of events remaining: 
-; getcount: 0
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-query number: 6; list of events remaining: 
-; getcount: 0
-query number: 7; list of events remaining: 
-[[3], [[7]], [8]] 
-; getcount: 1  <--
-
-start: 0 ; max: 8 ; found: 2 ; getsfound: 2 ; ornotflag: False
-query number: 0; list of events remaining: 
-; getcount: 0
-query number: 1; list of events remaining: 
-; getcount: 0
-query number: 2; list of events remaining: 
-; getcount: 0
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-query number: 6; list of events remaining: 
-; getcount: 0  <--
-query number: 7; list of events remaining: 
-; getcount: 0
-
-start: 0 ; max: 8 ; found: 2 ; getsfound: 2 ; ornotflag: False
-query number: 0; list of events remaining: 
-; getcount: 0
-query number: 1; list of events remaining: 
-; getcount: 0  <--
-query number: 2; list of events remaining: 
-; getcount: 0
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-query number: 6; list of events remaining: 
-; getcount: 0
-query number: 7; list of events remaining: 
-; getcount: 0
-
-start: 0 ; max: 8 ; found: 2 ; getsfound: 2 ; ornotflag: False
-query number: 0; list of events remaining: 
-; getcount: 0  <--
-query number: 1; list of events remaining: 
-; getcount: 0
-query number: 2; list of events remaining: 
-; getcount: 0
-query number: 3; list of events remaining: 
-; getcount: 0
-query number: 4; list of events remaining: 
-; getcount: 0
-query number: 5; list of events remaining: 
-; getcount: 0
-query number: 6; list of events remaining: 
-; getcount: 0
-query number: 7; list of events remaining: 
-; getcount: 0
-
-TYPE trauma DESCRIPTION presentation NOT FOLLOWEDBY TYPE trauma DESCRIPTION presentation OPTIONAL FOLLOWEDBY (TYPE trauma DESCRIPTION injury AISREGIONINDEX 4 NOT AND TYPE trauma DESCRIPTION injury AISREGIONINDEX ASPREVIOUS AISREGIONINDEX AISSEVERITY ASPREVIOUS GREATERTHAN AISSEVERITY STARTTIME ASPREVIOUS BEFORE OFFSETT+1 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT-1 STARTTIME NOT AND TYPE trauma DESCRIPTION injury AISREGIONINDEX ASPREVIOUS AISREGIONINDEX AISSEVERITY ASPREVIOUS EQUALS AISSEVERITY UID ASPREVIOUS GREATERTHAN UID STARTTIME ASPREVIOUS BEFORE OFFSETT+1 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT-1 STARTTIME) FOLLOWEDBY TYPE trauma DESCRIPTION death ENDSEARCH
-2 unit test 74 end 
-[[3], [5], [8]] 
-[[3], [7], [8]] 
+startadmission FIRSTUNIQUE (intracranial GET number AND tobacco GET number) ENDSEARCH
+1 unit test 76 end 
+[[1], [4], [5]] 
 
 

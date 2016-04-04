@@ -270,6 +270,23 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     eventfounds.append(ef)
                 for g in getfoundtemp:
                     getfounds.append(g)
+        if 'FIRSTUNIQUE' in connectors[eventfoundquerydepth]:
+            earlieststarttime = ''
+            earliestevent = []
+            earliestget = []
+            for e in range(len(eventfounds)):
+                starttime = ''
+                event = eventfounds[e]
+                get = getfounds[e]
+                for t in event['starttime']:
+                    if starttime == '' or t < starttime:
+                        starttime = t
+                if earlieststarttime == '' or earlieststarttime > starttime:
+                    earlieststarttime = starttime
+                    earliestevent = [event]
+                    earliestget = [get]
+            eventfounds = earliestevent
+            getfounds = earliestget
         for eventcount in range(0, len(eventfounds)):
             e = copy.deepcopy(eventfounds[eventcount])
             allkeysmatch = True
@@ -324,6 +341,14 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
         eventfound.append({})
         nextgetquerylist.insert(0, [])
         orstate[eventfoundquerydepth].append(False)
+    if 'FIRSTUNIQUE' in connectors[eventfoundquerydepth]:
+        earlieststarttime = ''
+        earliestevent = []
+        for event in extracted:
+            if earlieststarttime == '' or earlieststarttime > event['starttime']:
+                earlieststarttime = event['starttime']
+                earliestevent = [event]
+        extracted = earliestevent
     for event in extracted:
         if 'OR' in connectors[eventfoundquerydepth]:
             orstate[eventfoundquerydepth].append(True)
@@ -607,6 +632,14 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
         if not(query[0][0] == "("):                 #1st key is not a '(', not a bracket
             extracted = extract(eventList, buildquery)
             nextdepth = eventfoundquerydepth + 1
+            if 'FIRSTUNIQUE' in connectors[eventfoundquerydepth + 1]:
+                earlieststarttime = ''
+                earliestevent = []
+                for event in extracted:
+                    if earlieststarttime == '' or earlieststarttime > event['starttime']:
+                        earlieststarttime = event['starttime']
+                        earliestevent = [event]
+                extracted = earliestevent
             if debug2: log([e["uuid"] for e in extracted])
         else:                                       #'(' bracket start, recurse, collect result and parse result using remaining keyconstraints
             extracted = []
@@ -622,6 +655,23 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                         eventfounds.append(ef)
                     for g in getfoundtemp:
                         getfounds.append(g)
+            if 'FIRSTUNIQUE' in connectors[eventfoundquerydepth + 1]:
+                earlieststarttime = ''
+                earliestevent = []
+                earliestget = []
+                for e in range(len(eventfounds)):
+                    starttime = ''
+                    event = eventfounds[e]
+                    get = getfounds[e]
+                    for t in event['starttime']:
+                        if starttime == '' or t < starttime:
+                            starttime = t
+                    if earlieststarttime == '' or earlieststarttime > starttime:
+                        earlieststarttime = starttime
+                        earliestevent = [event]
+                        earliestget = [get]
+                eventfounds = earliestevent
+                getfounds = earliestget
             for eventcount in range(0, len(eventfounds)):
                 e = eventfounds[eventcount]
                 
@@ -907,7 +957,7 @@ def translate(userquery):
     '''
     #constants
     connectorwords = ["AND", "FOLLOWEDBY", "STRICTLYFOLLOWEDBY", "PRECEDEDBY", "STRICTLYPRECEDEDBY", "BETWEEN", "STRICTLYBETWEEN", "ENDSEARCH"]
-    searchwords = ["NOT", "ANYNUMBEROF", "OR", "ONEOF", "OPTIONAL"]
+    searchwords = ["NOT", "ANYNUMBEROF", "OR", "ONEOF", "OPTIONAL", "FIRSTUNIQUE"]
     brackets = ["(", ")"]
     
     #initial parser
@@ -1037,6 +1087,8 @@ def translate(userquery):
             buildconnector.append('AND')
         if "ANYNUMBEROF" in connector:
             buildconnector.append('ANYNUMBEROF')
+        if "FIRSTUNIQUE" in connector:
+            buildconnector.append('FIRSTUNIQUE')
         if "OPTIONAL" in connector:
             buildconnector.append('OPTIONAL')
         connectors.append(buildconnector)
@@ -2162,8 +2214,8 @@ if __name__ == '__main__':
     
     eventList = [{'uuid':[1], 'endtime': datetime(2010, 5, 26, 10, 0), 'type': 'admin ', 'description': 'startadmission ', 'starttime': datetime(2010, 5, 26, 10, 0), 'number': 1},
     {'uuid':[2], 'code': u'E66.9 ', 'endtime': datetime(2013, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'obesity, unspecified ', 'starttime': datetime(2013, 5, 28, 19, 9), 'number': 4}, 
-    {'uuid':[3], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 20, 9), 'number': 2},   #same time as 2
-    {'uuid':[4], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 21, 9), 'number': 3},   #1 day later
+    {'uuid':[4], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 20, 9), 'number': 3},   #same time
+    {'uuid':[3], 'code': u'G93.2 ', 'endtime': datetime(2013, 5, 28, 19, 9),'type': 'diagnosis ', 'description': u'benign intracranial hypertension ', 'starttime': datetime(2013, 5, 28, 20, 9), 'number': 2},   #same time
     {'uuid':[5], 'code': u'Z86.43 ', 'endtime': datetime(2014, 5, 28, 18, 9), 'type': 'diagnosis ', 'description': u'personal history of tobacco use disorder ', 'starttime': datetime(2014, 5, 28, 22, 9), 'number': 5}, 
     ]
     
@@ -2176,22 +2228,31 @@ if __name__ == '__main__':
     print(test2[2])
     log("")
     
-    eventList = [{u'admid': u'', u'admReason': u'', u'description': u'startadmission ', u'starttime': datetime(1900, 1, 1, 0, 0), u'unitid': u'', u'pmiid': u'ALF6239537', u'endtime': datetime(1900, 1, 1, 0, 0), u'type': u'admin ', u'unit': u'', u'uuid': [1]}, 
-    {u'admid': u'', u'admReason': u'', u'description': u'endadmission ', u'starttime': datetime(1900, 1, 2, 0, 0), u'unitid': u'', u'pmiid': u'ALF6239537', u'endtime': datetime(1900, 1, 2, 0, 0), u'type': u'admin ', u'unit': u'', u'uuid': [2]}, 
-    {u'uid': 0, u'gcsqualifier': u'Legitimate', u'respirationratequalifier': 4066772.0, u'gcsmotor': u'6', u'fractionofinspiredoxygen': 50.0, u'fast': u'Equivocal', u'uuid': [3], u'respiratoryrate': 18.0, u'systolichighvalue': 130.0, u'systoliclowvalue': 98.0, u'heartratelowvalue': 85.0, u'ambgcs': 15.0, u'diastolicbloodpressure': 98.0, u'gcs': 11.0, u'pmiid': u'ALF6239537', u'type': u'trauma ', u'description': u'presentation', u'oxygensaturation': 99.0, u'gcseye': u'3', u'pulserate': 100.0, u'gcsverbal': u'2', u'temperature': 36.9, u'systolicbloodpressure': 130.0, u'edgcs': 11.0, u'heartratehighvalue': 98.0, u'iss': 9.0, u'age': 45.0, u'iss12': 0.0, u'pupil': u'Pupils equal and reacting to light', u'starttime': datetime(2015, 10, 31, 4, 34), u'niss': 13.0, u'vstorm': 1.0}, 
-    {u'aisseverity': 2.0, u'uuid': [4], u'pmiid': u'ALF6239537', u'text': u'L Pneumothorax', u'bodyregion': u'Chest', u'description': u'injury', u'ais': u'4422022                  ', u'aisstructure': u'22', u'aistype': u'4', u'starttime': datetime(2015, 10, 31, 4, 34), u'aisregionindex': u'4', u'uid': 1, u'type': u'trauma ', u'aislevel': u'02'}, 
-    {u'aisseverity': 3.0, u'uuid': [5], u'pmiid': u'ALF6239537', u'text': u'small volume 11mm haemopericardium', u'bodyregion': u'Chest', u'description': u'injury', u'ais': u'4416033                  ', u'aisstructure': u'16', u'aistype': u'4', u'starttime': datetime(2015, 10, 31, 4, 34), u'aisregionindex': u'4', u'uid': 2, u'type': u'trauma ', u'aislevel': u'03'}, 
-    {u'aisseverity': 2.0, u'uuid': [6], u'pmiid': u'ALF6239537', u'text': u'R buttock (gluteal) laceration', u'bodyregion': u'External', u'description': u'injury', u'ais': u'8106042                  ', u'aisstructure': u'06', u'aistype': u'1', u'starttime': datetime(2015, 12, 14, 20, 49), u'aisregionindex': u'8', u'uid': 3, u'type': u'trauma ', u'aislevel': u'04'}, 
-    {u'aisseverity': 4.0, u'uuid': [7], u'pmiid': u'ALF6239537', u'text': u'15mm laceration to the brachiocephalic vein + blood loss (PEA arrest)', u'bodyregion': u'Chest', u'description': u'injury', u'ais': u'4206064                  ', u'aisstructure': u'06', u'aistype': u'2', u'starttime': datetime(2015, 12, 14, 20, 49), u'aisregionindex': u'4', u'uid': 4, u'type': u'trauma ', u'aislevel': u'06'}, 
-    {u'description': u'death ', u'cause': u'Complications of injury', u'uuid': [8], u'pmiid': u'ALF6239537', u'starttime': datetime(2015, 12, 15, 23, 59), u'coronernumber': u'6322/15', u'type': u'trauma ', u'sentinel': u'1b - Cardiac/resp arrest before arrival', u'uid': 5}]
+    log("FIRSTUNIQUE TEST")
+    instr = "intracranial GET number ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    connectors[0].append('FIRSTUNIQUE')
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 75 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 1
+    print(test2[2])
+    log("")
     
-    debug = True
-    debug2 = True
-    instr = "TYPE trauma DESCRIPTION presentation NOT FOLLOWEDBY TYPE trauma DESCRIPTION presentation OPTIONAL FOLLOWEDBY (TYPE trauma DESCRIPTION injury AISREGIONINDEX 4 NOT AND TYPE trauma DESCRIPTION injury AISREGIONINDEX ASPREVIOUS AISREGIONINDEX AISSEVERITY ASPREVIOUS GREATERTHAN AISSEVERITY STARTTIME ASPREVIOUS BEFORE OFFSETT+1 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT-1 STARTTIME NOT AND TYPE trauma DESCRIPTION injury AISREGIONINDEX ASPREVIOUS AISREGIONINDEX AISSEVERITY ASPREVIOUS EQUALS AISSEVERITY UID ASPREVIOUS GREATERTHAN UID STARTTIME ASPREVIOUS BEFORE OFFSETT+1 STARTTIME STARTTIME ASPREVIOUS AFTER OFFSETT-1 STARTTIME) FOLLOWEDBY TYPE trauma DESCRIPTION death ENDSEARCH"
+    instr = "startadmission FIRSTUNIQUE AND intracranial GET number ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
-    log(str(len(test2[0])) + " unit test 74 end " + printuuid(test2[0]))
-    #assert len(test2[0]) == 2
+    log(str(len(test2[0])) + " unit test 6 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 1
+    print(test2[2])
+    log("")
+    
+    instr = "startadmission FIRSTUNIQUE (intracranial GET number AND tobacco GET number) ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 77 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 1
     print(test2[2])
     log("")
