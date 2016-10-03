@@ -1289,6 +1289,14 @@ def parsekeyconstraint(userquery):
                 word = userquery[i]
                 flags.append(flag)
             constrainttype = "DATETIME"
+        else:
+            while True:
+                flag = textflag(word)
+                if flag == 'not':
+                    break
+                i = i + 1
+                word = userquery[i]
+                flags.append(flag)
         if len(word) >= 10 and word[:10] == "ASPREVIOUS":       #special ASPREVIOUS constraint; expects a target key or flags + key after this
             constraint = []
             constraint.append("EVENT")
@@ -1339,6 +1347,13 @@ def convertnum(num):
         return int(num)
     except ValueError:
         return float(num)
+
+def textflag(word):
+    if word == "EXACT":
+        return 'exact'
+    if word == "SUBSTRING":
+        return 'subtring'
+    return 'not'
 
 def numericflag(word):
     if word == "GREATERTHAN":
@@ -2243,7 +2258,7 @@ if __name__ == '__main__':
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
     log(instr)
-    log(str(len(test2[0])) + " unit test 6 end " + printuuid(test2[0]))
+    log(str(len(test2[0])) + " unit test 76 end " + printuuid(test2[0]))
     assert len(test2[0]) == 1
     print(test2[2])
     log("")
@@ -2256,3 +2271,23 @@ if __name__ == '__main__':
     assert len(test2[0]) == 1
     print(test2[2])
     log("")
+    
+    log("String EXACT flag TEST")
+    instr = "DESCRIPTION EXACT intracranial ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 78 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 0
+    #print(test2[2])
+    log("")
+    
+    instr = "startadmission AND DESCRIPTION EXACT benign_intracranial_hypertension_ ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 79 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 2
+    #print(test2[2])
+    log("")
+    
