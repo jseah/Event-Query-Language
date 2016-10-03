@@ -101,8 +101,8 @@ def valuematcheskey(value, key, constraint, flags):
             prunedflags.append(flag)
     flagused = False
     if isinstance(constraint, str):         #is a string
-        constraint = constraint.lower()
-        value = value.lower()
+        constraint = constraint.lower().strip()
+        value = value.lower().strip()
         if len(prunedflags) == 0:
             if constraint not in value:
                 constraintmatch = False
