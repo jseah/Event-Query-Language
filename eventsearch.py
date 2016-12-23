@@ -258,18 +258,25 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
         extracted = extract(eventList, queries[startdepth])
     else:                                                       #1st key is a '('
         extracted = []
-        if not "SAMEADMISSION" in connectors[startdepth]:
-            eventfounds, nextdepth, getfounds = evaluate(eventList, queries, connectors, gets, startdepth + 1)
-        else:                           #SAMEADMISSION flag
+        if "SAMEADMISSION" in connectors[startdepth] or "EDSAMEADMISSION" in connectors[startdepth] or "SAMEEPISODE" in connectors[startdepth]:
             eventfounds = []
             nextdepth = startdepth + 1
             getfounds = []
-            for eList in chopeventlist(eventList):
+            choppedevents = []
+            if "SAMEADMISSION" in connectors[startdepth]:
+                choppedevents = chopeventlist(eventList)
+            if "EDSAMEADMISSION" in connectors[startdepth]:
+                choppedevents = chopeventlist(eventList, admittype = "ed")
+            if "SAMEEPISODE" in connectors[startdepth]:
+                choppedevents = chopeventlistbyepisode(eventList)
+            for eList in choppedevents:
                 eventfoundtemp, nextdepth, getfoundtemp = evaluate(eList, queries, connectors, gets, startdepth + 1)
                 for ef in eventfoundtemp:
                     eventfounds.append(ef)
                 for g in getfoundtemp:
                     getfounds.append(g)
+        else:                           #SAMEADMISSION flag
+            eventfounds, nextdepth, getfounds = evaluate(eventList, queries, connectors, gets, startdepth + 1)
         if 'FIRSTUNIQUE' in connectors[eventfoundquerydepth]:
             earlieststarttime = ''
             earliestevent = []
@@ -643,18 +650,25 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
             if debug2: log([e["uuid"] for e in extracted])
         else:                                       #'(' bracket start, recurse, collect result and parse result using remaining keyconstraints
             extracted = []
-            if not "SAMEADMISSION" in connectors[eventfoundquerydepth + 1]:
-                eventfounds, nextdepth, getfounds = evaluate(eventList, queries, connectors, gets, eventfoundquerydepth + 2)
-            else:                           #SAMEADMISSION flag
+            if "SAMEADMISSION" in connectors[eventfoundquerydepth + 1] or "EDSAMEADMISSION" in connectors[eventfoundquerydepth + 1] or "SAMEEPISODE" in connectors[eventfoundquerydepth + 1]:
                 eventfounds = []
                 nextdepth = eventfoundquerydepth + 1
                 getfounds = []
-                for eList in chopeventlist(eventList):
+                choppedevents = []
+                if "SAMEADMISSION" in connectors[eventfoundquerydepth + 1]:
+                    choppedevents = chopeventlist(eventList)
+                if "EDSAMEADMISSION" in connectors[eventfoundquerydepth + 1]:
+                    choppedevents = chopeventlist(eventList, admittype = "ed")
+                if "SAMEEPISODE" in connectors[eventfoundquerydepth + 1]:
+                    choppedevents = chopeventlistbyepisode(eventList)
+                for eList in choppedevents:
                     eventfoundtemp, nextdepth, getfoundtemp = evaluate(eList, queries, connectors, gets, eventfoundquerydepth + 2)
                     for ef in eventfoundtemp:
                         eventfounds.append(ef)
                     for g in getfoundtemp:
                         getfounds.append(g)
+            else:                           #SAMEADMISSION flag
+                eventfounds, nextdepth, getfounds = evaluate(eventList, queries, connectors, gets, eventfoundquerydepth + 2)
             if 'FIRSTUNIQUE' in connectors[eventfoundquerydepth + 1]:
                 earlieststarttime = ''
                 earliestevent = []
@@ -1009,7 +1023,7 @@ def translate(userquery):
                 connectorlist.append(word)
                 searchtermsplitindex = i
                 word = words[i + 1]
-                if word == "SAMEADMISSION":
+                if word == "SAMEADMISSION" or word == "EDSAMEADMISSION" or word == "SAMEEPISODE":
                     i = i + 1
                     connectorlist.append(word)          #SAMEADMISSION violates synchronized count of userquerylist and connectorlist, this extra entry is removed later
                     searchtermsplitindex = i
@@ -1132,9 +1146,9 @@ def translate(userquery):
             querylist.append(query)
             continue
         if "(" in connector:
-            if connectorlist[queryindex] == "SAMEADMISSION":
+            if connectorlist[queryindex] == "SAMEADMISSION" or connectorlist[queryindex] == "EDSAMEADMISSION" or connectorlist[queryindex] == "SAMEEPISODE":
+                connectors[len(connectors) - 2].append(connectorlist[queryindex])         #HACK: buildconnector cannot be used here so have to edit connectors list directly
                 connectorlist.pop(queryindex)           #remove connectorlist extra entry for SAMEADMISSION
-                connectors[len(connectors) - 2].append("SAMEADMISSION")         #HACK: buildconnector cannot be used here so have to edit connectors list directly
         if ")" in connector:
             pass
         if "OR" in connector:
@@ -1446,8 +1460,8 @@ def getreturncountatdepth(querylist, connectors, depth):
             count = count + 1
         depth = depth - 1
     return count
-    
-def chopeventlist(eventList):       #assumes eventList is sorted by starttime
+
+def chopeventlist(eventList, admittype = ""):       #assumes eventList is sorted by starttime; 'ed' admittype will search for startemergadmissions
     inadmission = False
     eventcount = len(eventList)
     choppedeventlist = []
@@ -1455,7 +1469,10 @@ def chopeventlist(eventList):       #assumes eventList is sorted by starttime
     while True:
         e = eventList[i]
         key = 'description'
-        constraint = 'startadmission'
+        if admittype == "":
+            constraint = "startadmission"
+        elif admittype == "ed":
+            constraint = "startemergadmission"
         if not inadmission and keyinevent(e, key):
             if constraint in valuefromevent(e, key):        #found startadmission
                 inadmission = True
@@ -1473,7 +1490,10 @@ def chopeventlist(eventList):       #assumes eventList is sorted by starttime
         if inadmission:
             eventlistcol.append(e)
             key = 'description'
-            constraint = 'endadmission'
+            if admittype == "":
+                constraint = "endadmission"
+            elif admittype == "ed":
+                constraint = "endemergadmission"
             if keyinevent(e, key):
                 if constraint in valuefromevent(e, key):        #found endadmission
                     inadmission = False
@@ -1492,6 +1512,84 @@ def chopeventlist(eventList):       #assumes eventList is sorted by starttime
                     choppedeventlist.append(eventlistcol)
         i = i + 1
         if i == eventcount:
+            if inadmission:
+                choppedeventlist.append(eventlistcol)
+            break
+    return choppedeventlist
+
+def chopeventlistbyepisode(eventList):       #chops by episode
+    '''episodes are defined by overlapping admissions within 10 minutes
+    '''
+    inadmission = False
+    admissioncount = 0
+    eventcount = len(eventList)
+    choppedeventlist = []
+    i = 0
+    while True:
+        e = eventList[i]
+        key = 'description'
+        constraint = 'startadmission'
+        constraint2 = 'startemergadmission'
+        if keyinevent(e, key):
+            if constraint in valuefromevent(e, key) or constraint2 in valuefromevent(e, key):        #found startadmission
+                if not inadmission:
+                    admissioncount = 0
+                    admissionstarttime = valuefromevent(e, 'starttime')
+                    admissionstartindex = i
+                    while True:                                 #backtrace to first event sharing same time as startadmission, excluding 
+                        if not(admissionstartindex == 0):
+                            if valuefromevent(eventList[admissionstartindex - 1], 'starttime') == admissionstarttime:
+                                admissionstartindex = admissionstartindex - 1
+                            else:
+                                break
+                        else:
+                            break
+                    inadmission = True
+                admissioncount += 1
+        key = 'description'
+        constraint = 'endadmission'
+        constraint2 = 'endemergadmission'
+        if keyinevent(e, key):
+            if constraint in valuefromevent(e, key) or constraint2 in valuefromevent(e, key):        #found endadmission
+                admissioncount -= 1
+                if admissioncount == 0:   #potential end of episode if new start is not found within 10 minutes
+                    nextadmit = i
+                    episodeended = True
+                    while True:
+                        nextadmit += 1
+                        if nextadmit >= eventcount - 1:
+                            break
+                        timediff = abs(valuefromevent(eventList[nextadmit], 'starttime') - valuefromevent(eventList[i], 'starttime'))
+                        if timediff > timedelta(0, 600):     #look 10 minutes forward to see if any startadmissions exist
+                            break
+                        else:
+                            #pdb.set_trace()
+                            econstraint = 'startadmission'
+                            econstraint2 = 'startemergadmission'
+                            if keyinevent(eventList[nextadmit], 'description'):
+                                if econstraint in valuefromevent(eventList[nextadmit], 'description') or econstraint2 in valuefromevent(eventList[nextadmit], 'description'):
+                                    episodeended = False
+                                    break
+                    if episodeended:
+                        inadmission = False
+                        admissionendtime = valuefromevent(e, 'starttime')
+                        admissionendindex = i
+                        while True:
+                            if admissionendindex < eventcount - 1:
+                                if valuefromevent(eventList[admissionendindex + 1], 'starttime') == admissionendtime:
+                                    admissionendindex = admissionendindex + 1
+                                else:
+                                    break
+                            else:
+                                break
+                        i = admissionendindex
+                        eventlistcol = eventList[admissionstartindex:admissionendindex + 1]
+                        choppedeventlist.append(eventlistcol)
+        i = i + 1
+        if i == eventcount:
+            if inadmission:
+                eventlistcol = eventList[admissionstartindex:]
+                choppedeventlist.append(eventlistcol)
             break
     return choppedeventlist
 
@@ -2290,4 +2388,67 @@ if __name__ == '__main__':
     assert len(test2[0]) == 2
     #print(test2[2])
     log("")
+    
+    print("SAMEADMISSION, EDSAMEADMISSION and SAMEEPISODE test\n")
+    #SAMEADMISSION, EDSAMEADMISSION and SAMEEPISODE test
+    eventList = [{'uuid':[1], 'starttime': datetime(2010, 1, 1, 1, 0), 'type': 'admin ', 'description': 'startadmission ', 'starttime': datetime(2010, 1, 1, 1, 0)},
+    {'uuid':[2], 'endtime': datetime(2010, 1, 1, 5, 0), 'type': 'admin ', 'description': 'endadmission ',        'starttime': datetime(2010, 1, 1, 5, 0)},
+    {'uuid':[3], 'endtime': datetime(2010, 1, 2, 1, 0), 'type': 'admin ', 'description': 'startemergadmission ', 'starttime': datetime(2010, 1, 2, 1, 0)},
+    {'uuid':[4], 'endtime': datetime(2010, 1, 2, 5, 0), 'type': 'admin ', 'description': 'endemergadmission ',   'starttime': datetime(2010, 1, 2, 5, 0)},
+    {'uuid':[5], 'endtime': datetime(2010, 2, 1, 1, 0), 'type': 'admin ', 'description': 'startadmission ',      'starttime': datetime(2010, 2, 1, 1, 0)},
+    {'uuid':[6], 'endtime': datetime(2010, 2, 1, 1, 0), 'type': 'admin ', 'description': 'startemergadmission ', 'starttime': datetime(2010, 2, 1, 1, 0)},
+    {'uuid':[7], 'endtime': datetime(2010, 2, 1, 5, 0), 'type': 'admin ', 'description': 'endemergadmission ',   'starttime': datetime(2010, 2, 1, 5, 0)},
+    {'uuid':[8], 'endtime': datetime(2010, 2, 2, 1, 0), 'type': 'admin ', 'description': 'endadmission ',        'starttime': datetime(2010, 2, 2, 1, 0)},
+    {'uuid':[9], 'endtime': datetime(2010, 3, 1, 1, 0), 'type': 'admin ', 'description': 'startadmission ',      'starttime': datetime(2010, 3, 1, 1, 0)},
+    {'uuid':[10], 'endtime': datetime(2010, 3, 1, 2, 0), 'type': 'admin ', 'description': 'endadmission ',       'starttime': datetime(2010, 3, 1, 2, 0)},
+    {'uuid':[11], 'endtime': datetime(2010, 3, 1, 2, 10), 'type': 'admin ', 'description': 'startemergadmission ','starttime': datetime(2010, 3, 1, 2, 10)},
+    {'uuid':[12], 'endtime': datetime(2010, 3, 1, 3, 0), 'type': 'admin ', 'description': 'endemergadmission ',   'starttime': datetime(2010, 3, 1, 3, 0)},
+    {'uuid':[13], 'endtime': datetime(2010, 4, 1, 1, 0), 'type': 'admin ', 'description': 'startemergadmission ', 'starttime': datetime(2010, 4, 1, 1, 0)},
+    ]
+    
+    instr = "(SAMEADMISSION startadmission FOLLOWEDBY endadmission) ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 80 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 3
+    #print(test2[2])
+    log("")
+    
+    instr = "(EDSAMEADMISSION startemergadmission FOLLOWEDBY endemergadmission) ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 81 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 3
+    #print(test2[2])
+    log("")
+    
+    instr = "(EDSAMEADMISSION startemergadmission) ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 82 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 4
+    #print(test2[2])
+    log("")
+    
+    instr = "(SAMEEPISODE endemergadmission) ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 83 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 3
+    #print(test2[2])
+    log("")
+    
+    instr = "(SAMEEPISODE startadmission FOLLOWEDBY endemergadmission) ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 84 end " + printuuid(test2[0]))
+    assert len(test2[0]) == 2
+    #print(test2[2])
+    log("")
+    
     
