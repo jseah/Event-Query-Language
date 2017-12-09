@@ -258,7 +258,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
         extracted = extract(eventList, queries[startdepth])
     else:                                                       #1st key is a '('
         extracted = []
-        if "SAMEADMISSION" in connectors[startdepth] or "EDSAMEADMISSION" in connectors[startdepth] or "SAMEEPISODE" in connectors[startdepth]:
+        if "SAMEADMISSION" in connectors[startdepth] or "EDSAMEADMISSION" in connectors[startdepth] or "SAMEEPISODE" in connectors[startdepth] or "SAMEEPISODEED48" in connectors[startdepth]:
             eventfounds = []
             nextdepth = startdepth + 1
             getfounds = []
@@ -269,6 +269,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                 choppedevents = chopeventlist(eventList, admittype = "ed")
             if "SAMEEPISODE" in connectors[startdepth]:
                 choppedevents = chopeventlistbyepisode(eventList)
+            if "SAMEEPISODEED48" in connectors[startdepth]:
+                choppedevents = chopeventlistbyepisode(eventList, restrictemergto48 = True)
             for eList in choppedevents:
                 eventfoundtemp, nextdepth, getfoundtemp = evaluate(eList, queries, connectors, gets, startdepth + 1)
                 for ef in eventfoundtemp:
@@ -650,7 +652,7 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
             if debug2: log([e["uuid"] for e in extracted])
         else:                                       #'(' bracket start, recurse, collect result and parse result using remaining keyconstraints
             extracted = []
-            if "SAMEADMISSION" in connectors[eventfoundquerydepth + 1] or "EDSAMEADMISSION" in connectors[eventfoundquerydepth + 1] or "SAMEEPISODE" in connectors[eventfoundquerydepth + 1]:
+            if "SAMEADMISSION" in connectors[eventfoundquerydepth + 1] or "EDSAMEADMISSION" in connectors[eventfoundquerydepth + 1] or "SAMEEPISODE" in connectors[eventfoundquerydepth + 1] or "SAMEEPISODEED48" in connectors[eventfoundquerydepth + 1]:
                 eventfounds = []
                 nextdepth = eventfoundquerydepth + 1
                 getfounds = []
@@ -661,6 +663,8 @@ def evaluate(eventList, queries, connectors, gets, startdepth = 0):
                     choppedevents = chopeventlist(eventList, admittype = "ed")
                 if "SAMEEPISODE" in connectors[eventfoundquerydepth + 1]:
                     choppedevents = chopeventlistbyepisode(eventList)
+                if "SAMEEPISODEED48" in connectors[eventfoundquerydepth + 1]:
+                    choppedevents = chopeventlistbyepisode(eventList, restrictemergto48 = True)
                 for eList in choppedevents:
                     eventfoundtemp, nextdepth, getfoundtemp = evaluate(eList, queries, connectors, gets, eventfoundquerydepth + 2)
                     for ef in eventfoundtemp:
@@ -1023,7 +1027,7 @@ def translate(userquery):
                 connectorlist.append(word)
                 searchtermsplitindex = i
                 word = words[i + 1]
-                if word == "SAMEADMISSION" or word == "EDSAMEADMISSION" or word == "SAMEEPISODE":
+                if word == "SAMEADMISSION" or word == "EDSAMEADMISSION" or word == "SAMEEPISODE" or word == "SAMEEPISODEED48":
                     i = i + 1
                     connectorlist.append(word)          #SAMEADMISSION violates synchronized count of userquerylist and connectorlist, this extra entry is removed later
                     searchtermsplitindex = i
@@ -1146,7 +1150,7 @@ def translate(userquery):
             querylist.append(query)
             continue
         if "(" in connector:
-            if connectorlist[queryindex] == "SAMEADMISSION" or connectorlist[queryindex] == "EDSAMEADMISSION" or connectorlist[queryindex] == "SAMEEPISODE":
+            if connectorlist[queryindex] == "SAMEADMISSION" or connectorlist[queryindex] == "EDSAMEADMISSION" or connectorlist[queryindex] == "SAMEEPISODE" or connectorlist[queryindex] == "SAMEEPISODEED48":
                 connectors[len(connectors) - 2].append(connectorlist[queryindex])         #HACK: buildconnector cannot be used here so have to edit connectors list directly
                 connectorlist.pop(queryindex)           #remove connectorlist extra entry for SAMEADMISSION
         if ")" in connector:
@@ -1517,9 +1521,43 @@ def chopeventlist(eventList, admittype = ""):       #assumes eventList is sorted
             break
     return choppedeventlist
 
-def chopeventlistbyepisode(eventList):       #chops by episode
+def addendemergadmissionafter48(eventList):
+    admissionstarttime = ""
+    eventcount = len(eventList)
+    i = 0
+    while True:
+        e = eventList[i]
+        key = 'description'
+        startemerg = 'startemergadmission'
+        endemerg = 'endemergadmission'
+        if keyinevent(e, key):
+            if startemerg in valuefromevent(e, key):
+                admissionstarttime = valuefromevent(e, 'starttime')
+                j = i + 1
+                while True:
+                    e2 = eventList[j]
+                    if keyinevent(e2, 'starttime'):
+                        if valuefromevent(e2, 'starttime') - admissionstarttime > timedelta(2):
+                            eventList.insert(j, {'uuid':[-1], 'endtime': admissionstarttime + timedelta(2), 'type': 'admin ', 'description': 'endemergadmission ',   'starttime': admissionstarttime + timedelta(2)})
+                            break
+                    if keyinevent(e2, key):
+                        if endemerg in valuefromevent(e, key):
+                            break
+                    if j == eventcount:
+                        eventList.append({'uuid':[-1], 'endtime': admissionstarttime + timedelta(2), 'type': 'admin ', 'description': 'endemergadmission ',   'starttime': admissionstarttime + timedelta(2)})
+                        break
+                    j = j + 1
+        i = i + 1
+        if i == eventcount:
+            break
+
+def chopeventlistbyepisode(eventList, restrictemergto48 = False):       #chops by episode
     '''episodes are defined by overlapping admissions within 10 minutes
+        restrictemergto48 flag triggers addition of endemergadmission 48 hours after startadmissions
     '''
+    eventList = copy.deepcopy(eventList)
+    if restrictemergto48 == True:
+        addendemergadmissionafter48(eventList)
     inadmission = False
     admissioncount = 0
     eventcount = len(eventList)
@@ -2451,4 +2489,24 @@ if __name__ == '__main__':
     #print(test2[2])
     log("")
     
+    print("Emergency Admission, Restrict to 48 hours test\n")
+    #Emergency Admission, Restrict to 48 hours test
+    eventList = [{'uuid':[1], 'starttime': datetime(2010, 1, 1, 1, 0), 'type': 'admin ', 'description': 'startemergadmission '},
+    {'uuid':[2], 'starttime': datetime(2010, 1, 2, 1, 0), 'type': 'admin ', 'description': 'endemergadmission '},
+    {'uuid':[3], 'starttime': datetime(2010, 1, 3, 1, 0), 'type': 'admin ', 'description': 'startemergadmission '},
+    {'uuid':[4], 'starttime': datetime(2010, 1, 7, 1, 0), 'type': 'admin ', 'description': 'endemergadmission '},
+    {'uuid':[5], 'starttime': datetime(2010, 1, 8, 1, 0), 'type': 'admin ', 'description': 'startemergadmission '},
+    {'uuid':[6], 'starttime': datetime(2010, 1, 9, 1, 0), 'type': 'admin ', 'description': 'startemergadmission '},
+    {'uuid':[7], 'starttime': datetime(2010, 1, 10, 16, 0), 'type': 'admin ', 'description': 'endemergadmission '},
+    {'uuid':[8], 'starttime': datetime(2010, 1, 11, 1, 0), 'type': 'admin ', 'description': 'startemergadmission '},
+    ]
     
+    instr = "(SAMEEPISODEED48 startemergadmission FOLLOWEDBY endemergadmission) ENDSEARCH"
+    test, connectors, gets = translate(instr)
+    test2 = evaluate(eventList, test, connectors, gets)
+    log(instr)
+    log(str(len(test2[0])) + " unit test 85 end " + printuuid(test2[0]))
+    #print(test2[2])
+    assert len(test2[0]) == 7
+    #pprint.pprint(chopeventlistbyepisode(eventList, restrictemergto48 = True))
+    log("")
