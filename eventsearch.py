@@ -1523,32 +1523,39 @@ def chopeventlist(eventList, admittype = ""):       #assumes eventList is sorted
 
 def addendemergadmissionafter48(eventList):
     admissionstarttime = ""
-    eventcount = len(eventList)
+    insertcount = 1
+    key = 'description'
+    startemerg = 'startemergadmission'
+    endemerg = 'endemergadmission'
     i = 0
     while True:
         e = eventList[i]
-        key = 'description'
-        startemerg = 'startemergadmission'
-        endemerg = 'endemergadmission'
+        if debug3:
+            print(e['uuid'], e['description'])
+            #pdb.set_trace()
         if keyinevent(e, key):
             if startemerg in valuefromevent(e, key):
                 admissionstarttime = valuefromevent(e, 'starttime')
                 j = i + 1
                 while True:
+                    if j == len(eventList):
+                        eventList.append({'uuid':[-insertcount], 'endtime': admissionstarttime + timedelta(2), 'type': 'admin ', 'description': 'endemergadmission ',   'starttime': admissionstarttime + timedelta(2)})
+                        if debug3:
+                            insertcount = insertcount + 1
+                        break
                     e2 = eventList[j]
                     if keyinevent(e2, 'starttime'):
                         if valuefromevent(e2, 'starttime') - admissionstarttime > timedelta(2):
-                            eventList.insert(j, {'uuid':[-1], 'endtime': admissionstarttime + timedelta(2), 'type': 'admin ', 'description': 'endemergadmission ',   'starttime': admissionstarttime + timedelta(2)})
+                            eventList.insert(j, {'uuid':[-insertcount], 'endtime': admissionstarttime + timedelta(2), 'type': 'admin ', 'description': 'endemergadmission ',   'starttime': admissionstarttime + timedelta(2)})
+                            if debug3:
+                                insertcount = insertcount + 1
                             break
                     if keyinevent(e2, key):
-                        if endemerg in valuefromevent(e, key):
+                        if endemerg in valuefromevent(e2, key):
                             break
-                    if j == eventcount:
-                        eventList.append({'uuid':[-1], 'endtime': admissionstarttime + timedelta(2), 'type': 'admin ', 'description': 'endemergadmission ',   'starttime': admissionstarttime + timedelta(2)})
-                        break
                     j = j + 1
         i = i + 1
-        if i == eventcount:
+        if i == len(eventList):
             break
 
 def chopeventlistbyepisode(eventList, restrictemergto48 = True):       #chops by episode
@@ -1558,6 +1565,9 @@ def chopeventlistbyepisode(eventList, restrictemergto48 = True):       #chops by
     eventList = copy.deepcopy(eventList)
     if restrictemergto48 == True:
         addendemergadmissionafter48(eventList)
+        if debug3:
+            for list in eventList:
+                print(list['uuid'], list['starttime'])
     inadmission = False
     admissioncount = 0
     eventcount = len(eventList)
@@ -2501,6 +2511,7 @@ if __name__ == '__main__':
     {'uuid':[8], 'starttime': datetime(2010, 1, 11, 1, 0), 'type': 'admin ', 'description': 'startemergadmission '},
     ]
     
+    #debug3 = True
     instr = "(SAMEEPISODE startemergadmission FOLLOWEDBY endemergadmission) ENDSEARCH"
     test, connectors, gets = translate(instr)
     test2 = evaluate(eventList, test, connectors, gets)
